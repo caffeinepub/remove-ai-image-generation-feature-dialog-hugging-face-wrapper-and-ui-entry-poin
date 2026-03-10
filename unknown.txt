@@ -1,0 +1,2 @@
+
+This single-line type fix ensures proper type compatibility with ICP Index canister operations and prevents Candid decoding errors during transaction processing. No other code, functions, or logic in the backend are modified as part of this fix.
