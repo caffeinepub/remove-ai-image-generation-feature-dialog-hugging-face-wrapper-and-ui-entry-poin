@@ -49,7 +49,7 @@ export default function Header() {
                 onClick={() => setShowGetPixelsDialog(true)}
                 variant="default"
                 size="sm"
-                className="font-['Inter'] text-sm h-7 px-2.5 bg-primary hover:bg-primary/90 text-black"
+                className="font-['Inter'] text-sm h-7 px-2.5 bg-primary hover:bg-primary/90 text-white"
                 data-ocid="header.primary_button"
               >
                 Get Early Pixels

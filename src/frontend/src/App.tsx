@@ -31,7 +31,12 @@ const router = createRouter({ routeTree });
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="win95"
+      enableSystem={false}
+      themes={["dark", "win95"]}
+    >
       <RouterProvider router={router} />
     </ThemeProvider>
   );

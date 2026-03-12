@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Press+Start+2P&family=VT323&family=Silkscreen:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -76,6 +76,41 @@
     --sidebar-ring: 0.65 0.22 280;
   }
 
+  .win95 {
+    --background: 0.753 0 0;
+    --foreground: 0 0 0;
+    --card: 0.753 0 0;
+    --card-foreground: 0 0 0;
+    --popover: 0.753 0 0;
+    --popover-foreground: 0 0 0;
+    --primary: 0.2 0.15 250;
+    --primary-foreground: 0.985 0 0;
+    --secondary: 0.69 0 0;
+    --secondary-foreground: 0 0 0;
+    --muted: 0.69 0 0;
+    --muted-foreground: 0.2 0 0;
+    --accent: 0.2 0.15 250;
+    --accent-foreground: 0.985 0 0;
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 0.985 0 0;
+    --border: 0.5 0 0;
+    --input: 0.98 0 0;
+    --ring: 0.2 0.15 250;
+    --chart-1: 0.646 0.222 41.116;
+    --chart-2: 0.6 0.118 184.704;
+    --chart-3: 0.398 0.07 227.392;
+    --chart-4: 0.828 0.189 84.429;
+    --chart-5: 0.769 0.188 70.08;
+    --sidebar: 0.69 0 0;
+    --sidebar-foreground: 0 0 0;
+    --sidebar-primary: 0.2 0.15 250;
+    --sidebar-primary-foreground: 0.985 0 0;
+    --sidebar-accent: 0.65 0 0;
+    --sidebar-accent-foreground: 0 0 0;
+    --sidebar-border: 0.5 0 0;
+    --sidebar-ring: 0.2 0.15 250;
+  }
+
   * {
     @apply border-border;
   }
@@ -90,6 +125,23 @@
   .font-mono {
     font-family: "JetBrains Mono", "Fira Code", "Consolas", "Monaco", monospace;
   }
+}
+
+/* Win95 theme overrides */
+.win95 body {
+  background-color: #c0c0c0;
+  color: #000000;
+}
+
+.win95 aside,
+.win95 header,
+.win95 [class*="border-border"] {
+  border-color: #888888;
+}
+
+.win95 button:not([class*="ghost"]) {
+  border: 2px solid;
+  border-color: #ffffff #888888 #888888 #ffffff;
 }
 
 canvas,

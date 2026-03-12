@@ -5,13 +5,16 @@ import {
   Droplet,
   Eraser,
   Minus,
+  Moon,
   Paintbrush,
   Pencil,
   Pipette,
   Sparkles,
   Square,
   SquareDashed,
+  Sun,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 // Simple lasso icon component (polyline loop)
@@ -152,6 +155,55 @@ function ToolButton({
   );
 }
 
+function ThemeToggleButton() {
+  const { theme, setTheme } = useTheme();
+  const [showTooltip, setShowTooltip] = useState(false);
+  const isWin95 = theme === "win95";
+
+  const handleToggle = () => {
+    setTheme(isWin95 ? "dark" : "win95");
+  };
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      <Button
+        variant="ghost"
+        size="icon"
+        className="w-10 h-10 transition-colors"
+        onClick={handleToggle}
+        data-ocid="theme.toggle"
+        aria-label={isWin95 ? "Switch to Dark Theme" : "Switch to Win95 Theme"}
+      >
+        {isWin95 ? (
+          <Sun className="w-4 h-4 opacity-70" />
+        ) : (
+          <Moon className="w-4 h-4 opacity-70" />
+        )}
+      </Button>
+
+      {showTooltip && (
+        <div
+          className="absolute left-full ml-2 top-1/2 -translate-y-1/2"
+          style={{
+            position: "absolute",
+            zIndex: 200,
+            pointerEvents: "none",
+            animation: "fadeIn 0.15s ease-out",
+          }}
+        >
+          <div className="bg-gray-900 text-gray-200 px-2 py-1 rounded text-xs whitespace-nowrap pointer-events-none">
+            {isWin95 ? "Switch to Dark Theme" : "Switch to Win95 Theme"}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ToolPanel() {
   const [activeTool, setActiveTool] = useState<string>("pencil");
 
@@ -235,6 +287,14 @@ export default function ToolPanel() {
           onClick={() => handleToolClick(tool.tool)}
         />
       ))}
+
+      {/* Spacer pushes theme toggle to bottom */}
+      <div className="mt-auto" />
+
+      <Separator className="mb-2 w-8" />
+
+      {/* Theme toggle button */}
+      <ThemeToggleButton />
 
       <style>{`
                 @keyframes fadeIn {
