@@ -48,7 +48,7 @@ export default function DonateICPDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="bg-card border border-border text-foreground max-w-md"
+        className="bg-card border border-border text-foreground max-w-md z-[1000]"
         data-ocid="donate.dialog"
       >
         <DialogHeader>
