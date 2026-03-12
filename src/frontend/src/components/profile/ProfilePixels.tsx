@@ -1,3 +1,4 @@
+import DonateICPDialog from "@/components/modals/DonateICPDialog";
 import GetPixelsDialog from "@/components/modals/GetPixelsDialog";
 import ICPInfoDialog from "@/components/modals/ICPInfoDialog";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +16,20 @@ import {
   useGetCurrentEra,
   useGetMyPendingPixelPurchases,
 } from "@/hooks/useQueries";
-import { ChevronRight, Clock, Info, Loader2, Sparkles } from "lucide-react";
+import {
+  ChevronRight,
+  Clock,
+  Heart,
+  Info,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 import { useState } from "react";
 
 export default function ProfilePixels() {
   const [getPixelsDialogOpen, setGetPixelsDialogOpen] = useState(false);
   const [icpInfoDialogOpen, setIcpInfoDialogOpen] = useState(false);
+  const [donateDialogOpen, setDonateDialogOpen] = useState(false);
   const { data: pixelBalance, isLoading } = useGetCallerPixelBalance();
   const { data: currentEra } = useGetCurrentEra();
   const { data: pendingPurchases, isLoading: pendingLoading } =
@@ -29,7 +38,6 @@ export default function ProfilePixels() {
   const pixelCount = Number(pixelBalance || 0n);
   const era = currentEra || "Alpha";
 
-  // Local mapping for display-only prices per era
   const ERA_PRICE_MAP: Record<string, number> = {
     Alpha: 0.1,
     Beta: 0.25,
@@ -84,7 +92,6 @@ export default function ProfilePixels() {
   const nextTier = getNextTier(pixelCount);
   const currentTierThreshold = getCurrentTierThreshold(pixelCount);
 
-  // Calculate progress percentage
   const progressPercentage = nextTier
     ? ((pixelCount - currentTierThreshold) /
         (nextTier.required - currentTierThreshold)) *
@@ -177,7 +184,6 @@ export default function ProfilePixels() {
                     Pixels
                   </div>
 
-                  {/* Pending Pixels Display */}
                   {!pendingLoading && totalPendingPixels > 0 && (
                     <div className="pt-1 space-y-0.5">
                       <div className="text-sm text-muted-foreground">
@@ -293,6 +299,16 @@ export default function ProfilePixels() {
               <Info className="w-4 h-4" />
             </Button>
             <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDonateDialogOpen(true)}
+              className="h-8 rounded-sm px-3 text-xs"
+              data-ocid="donate.open_modal_button"
+            >
+              <Heart className="w-3 h-3 mr-1 text-red-400" />
+              Donate
+            </Button>
+            <Button
               id="15ep1sm"
               onClick={() => setGetPixelsDialogOpen(true)}
               className="flex-1 text-xs h-8 rounded-sm"
@@ -311,6 +327,11 @@ export default function ProfilePixels() {
       <ICPInfoDialog
         open={icpInfoDialogOpen}
         onOpenChange={setIcpInfoDialogOpen}
+      />
+
+      <DonateICPDialog
+        open={donateDialogOpen}
+        onOpenChange={setDonateDialogOpen}
       />
     </>
   );

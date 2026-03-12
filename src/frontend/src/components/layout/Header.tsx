@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Info } from "lucide-react";
+import { Heart, Info } from "lucide-react";
 import { useState } from "react";
 import LoginButton from "../auth/LoginButton";
+import DonateICPDialog from "../modals/DonateICPDialog";
 import GetPixelsDialog from "../modals/GetPixelsDialog";
 import ICPInfoDialog from "../modals/ICPInfoDialog";
 import MenuBar from "./MenuBar";
@@ -9,6 +10,7 @@ import MenuBar from "./MenuBar";
 export default function Header() {
   const [showGetPixelsDialog, setShowGetPixelsDialog] = useState(false);
   const [showICPInfoDialog, setShowICPInfoDialog] = useState(false);
+  const [showDonateDialog, setShowDonateDialog] = useState(false);
 
   return (
     <>
@@ -29,14 +31,26 @@ export default function Header() {
             />
           </div>
 
-          {/* Right: Action Buttons */}
+          {/* Right: Action Buttons - Order: Donate, Get Early Pixels, Info, Login */}
           <div className="flex items-center gap-2 pr-4">
+            <Button
+              onClick={() => setShowDonateDialog(true)}
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 hover:bg-accent flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              title="Donate ICP"
+              data-ocid="donate.open_modal_button"
+            >
+              <Heart className="h-3.5 w-3.5 text-red-400" />
+              <span className="hidden sm:inline">Donate</span>
+            </Button>
             <div className="flex items-center gap-1">
               <Button
                 onClick={() => setShowGetPixelsDialog(true)}
                 variant="default"
                 size="sm"
                 className="font-['Inter'] text-sm h-7 px-2.5 bg-primary hover:bg-primary/90 text-black"
+                data-ocid="header.primary_button"
               >
                 Get Early Pixels
               </Button>
@@ -58,6 +72,11 @@ export default function Header() {
       <GetPixelsDialog
         open={showGetPixelsDialog}
         onOpenChange={setShowGetPixelsDialog}
+      />
+
+      <DonateICPDialog
+        open={showDonateDialog}
+        onOpenChange={setShowDonateDialog}
       />
 
       <ICPInfoDialog
