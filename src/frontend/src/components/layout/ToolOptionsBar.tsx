@@ -139,7 +139,7 @@ export default function ToolOptionsBar({
             type="button"
             className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
               mirrorX
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-gray-700 border-gray-600 hover:bg-gray-600"
             }`}
             onClick={onToggleMirrorX}
@@ -151,7 +151,7 @@ export default function ToolOptionsBar({
             type="button"
             className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
               mirrorY
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-gray-700 border-gray-600 hover:bg-gray-600"
             }`}
             onClick={onToggleMirrorY}
@@ -163,7 +163,7 @@ export default function ToolOptionsBar({
             type="button"
             className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
               pixelPerfect
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-gray-700 border-gray-600 hover:bg-gray-600"
             }`}
             onClick={onTogglePixelPerfect}
@@ -175,7 +175,7 @@ export default function ToolOptionsBar({
             type="button"
             className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
               dither
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-gray-700 border-gray-600 hover:bg-gray-600"
             }`}
             onClick={onToggleDither}
@@ -187,7 +187,7 @@ export default function ToolOptionsBar({
             type="button"
             className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
               showGrid
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-gray-700 border-gray-600 hover:bg-gray-600"
             }`}
             onClick={onToggleGrid}
@@ -199,7 +199,7 @@ export default function ToolOptionsBar({
             type="button"
             className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
               showPixelGrid
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-gray-700 border-gray-600 hover:bg-gray-600"
             }`}
             onClick={onTogglePixelGrid}
@@ -211,7 +211,7 @@ export default function ToolOptionsBar({
             type="button"
             className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
               showTileGrid
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-gray-700 border-gray-600 hover:bg-gray-600"
             }`}
             onClick={onToggleTileGrid}
@@ -225,7 +225,7 @@ export default function ToolOptionsBar({
             max="256"
             value={tileSize}
             onChange={handleTileSizeInputChange}
-            className="w-12 px-1 py-1 text-xs font-mono bg-gray-700 border border-gray-600 rounded text-center"
+            className="w-12 px-1 py-1 text-xs font-mono bg-secondary border border-border rounded text-center"
             title="Tile Size"
           />
         </div>
