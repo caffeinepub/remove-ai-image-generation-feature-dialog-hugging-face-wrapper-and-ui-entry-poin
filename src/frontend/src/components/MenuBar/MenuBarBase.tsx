@@ -99,8 +99,18 @@ export default function MenuBarBase() {
     return () => clearInterval(interval);
   }, [runtime]);
 
-  // Selection-based commands depend on selection state
-  const hasSelection = runtime.toolController.hasSelection();
+  // Selection-based commands — reactive polling so menu items enable/disable correctly
+  const [hasSelection, setHasSelection] = useState(false);
+  useEffect(() => {
+    const poll = () => {
+      const activeRuntime =
+        (window as any).editor?.getActiveRuntime?.() ?? getEditorRuntime();
+      setHasSelection(activeRuntime.toolController.hasSelection());
+    };
+    poll();
+    const interval = setInterval(poll, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   // Clipboard commands depend on clipboard data
   const hasClipboardData =

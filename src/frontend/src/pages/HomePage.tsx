@@ -1316,6 +1316,7 @@ export default function HomePage() {
     anyWin.editor.clipboard.copy = handleCopy;
     anyWin.editor.clipboard.cut = handleCut;
     anyWin.editor.clipboard.paste = handlePaste;
+    anyWin.editor.getActiveRuntime = () => runtimeRef.current;
 
     if (!anyWin.editor.selection) {
       anyWin.editor.selection = {};
