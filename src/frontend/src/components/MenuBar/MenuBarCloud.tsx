@@ -188,10 +188,10 @@ export default function MenuBarCloud() {
 
       const result = await newProject.mutateAsync({ name, data });
 
-      if (result.__kind__ === "ok") {
+      if ("ok" in result) {
         // Update project tracking
         if ((window as any).editor?.setCurrentProjectId) {
-          (window as any).editor.setCurrentProjectId(result.ok);
+          (window as any).editor.setCurrentProjectId((result as any).ok);
         }
         if ((window as any).editor?.setCurrentProjectName) {
           (window as any).editor.setCurrentProjectName(name);
@@ -201,12 +201,14 @@ export default function MenuBarCloud() {
         (window as any).editor?.markTabClean?.();
         (window as any).editor?.setActiveTabName?.(name);
         setSaveAsDialog(false);
-      } else if (result.__kind__ === "err") {
+      } else if ("err" in result) {
         // Check if the error is the project limit error
-        if (result.err === "Maximum number of saved projects reached") {
+        if (
+          (result as any).err === "Maximum number of saved projects reached"
+        ) {
           setProjectLimitDialog(true);
         } else {
-          toast.error(result.err);
+          toast.error((result as any).err);
         }
       }
     } catch (error: any) {
@@ -280,14 +282,16 @@ export default function MenuBarCloud() {
         data: compressedData,
       });
 
-      if (result.__kind__ === "ok") {
+      if ("ok" in result) {
         toast.success("Project uploaded successfully");
-      } else if (result.__kind__ === "err") {
+      } else if ("err" in result) {
         // Check if the error is the project limit error
-        if (result.err === "Maximum number of saved projects reached") {
+        if (
+          (result as any).err === "Maximum number of saved projects reached"
+        ) {
           setProjectLimitDialog(true);
         } else {
-          toast.error(result.err);
+          toast.error((result as any).err);
         }
       }
     } catch (error: any) {
