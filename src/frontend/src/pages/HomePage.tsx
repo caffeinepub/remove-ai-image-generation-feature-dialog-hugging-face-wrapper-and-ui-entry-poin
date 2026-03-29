@@ -141,6 +141,7 @@ export default function HomePage() {
   const [pendingTabRestore, setPendingTabRestoreState] = useState<{
     project: SerializedProject;
     name: string;
+    projectId: string | null;
   } | null>(null);
 
   // Hover pixel tracking ref (replaced state with ref)
@@ -1733,8 +1734,9 @@ export default function HomePage() {
     anyWin.editor.setPendingTabRestore = (
       project: SerializedProject,
       name: string,
+      projectId: string | null,
     ) => {
-      setPendingTabRestoreState({ project, name });
+      setPendingTabRestoreState({ project, name, projectId });
     };
 
     needsRedrawRef.current = true;
@@ -1754,6 +1756,13 @@ export default function HomePage() {
       handleTabSwitch(1);
     } else if (tabsRef.current.length >= 2 && activeTabIndex === 1) {
       resetEditorFromProject(pendingTabRestore.project);
+      // Set the project ID on Tab 2's runtime so Save overrides correctly
+      if (pendingTabRestore.projectId && runtimeRef.current) {
+        runtimeRef.current.setCurrentProject(
+          pendingTabRestore.projectId,
+          pendingTabRestore.name,
+        );
+      }
       setTabName(pendingTabRestore.name);
       setTabs((prev) =>
         prev.map((t, i) =>

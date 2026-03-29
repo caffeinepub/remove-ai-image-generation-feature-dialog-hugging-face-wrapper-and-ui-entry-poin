@@ -124,6 +124,7 @@ export default function MenuBarCloud() {
             (window as any).editor?.setPendingTabRestore?.(
               project1,
               tabsData[1].name,
+              projectId,
             );
           }
           toast.success("Project loaded successfully");
