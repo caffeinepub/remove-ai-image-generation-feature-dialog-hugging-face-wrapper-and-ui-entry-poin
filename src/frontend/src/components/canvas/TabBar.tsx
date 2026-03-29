@@ -139,7 +139,7 @@ export default function TabBar({
                     flexShrink: 0,
                   }}
                 >
-                  {index + 1}/{tabs.length}
+                  {index + 1}/2
                 </span>
                 {isDirty && (
                   <span
