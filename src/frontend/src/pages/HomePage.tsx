@@ -590,6 +590,9 @@ export default function HomePage() {
       if (
         target.closest("button") ||
         target.closest('[role="button"]') ||
+        target.closest('[role="menuitem"]') ||
+        target.closest('[role="menu"]') ||
+        target.closest('[role="dialog"]') ||
         target.closest("input") ||
         target.closest("textarea") ||
         target.closest('[data-ui-element="true"]')
@@ -1316,6 +1319,7 @@ export default function HomePage() {
     anyWin.editor.clipboard.copy = handleCopy;
     anyWin.editor.clipboard.cut = handleCut;
     anyWin.editor.clipboard.paste = handlePaste;
+    anyWin.editor.clipboard.hasData = () => clipboardRef.current !== null;
     anyWin.editor.getActiveRuntime = () => runtimeRef.current;
 
     if (!anyWin.editor.selection) {

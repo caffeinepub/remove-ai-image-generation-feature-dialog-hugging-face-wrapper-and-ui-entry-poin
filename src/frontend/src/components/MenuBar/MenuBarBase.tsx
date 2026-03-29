@@ -112,9 +112,18 @@ export default function MenuBarBase() {
     return () => clearInterval(interval);
   }, []);
 
-  // Clipboard commands depend on clipboard data
-  const hasClipboardData =
-    (window as any).editor?.clipboard?.hasData?.() || false;
+  // Clipboard commands depend on clipboard data — reactive polling so Paste enables after Cut
+  const [hasClipboardData, setHasClipboardData] = useState(false);
+  useEffect(() => {
+    const poll = () => {
+      setHasClipboardData(
+        (window as any).editor?.clipboard?.hasData?.() || false,
+      );
+    };
+    poll();
+    const interval = setInterval(poll, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   // File Menu Handlers (Local only)
   const handleNew = () => {
