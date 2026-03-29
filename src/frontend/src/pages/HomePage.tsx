@@ -1696,6 +1696,8 @@ export default function HomePage() {
     };
 
     anyWin.editor.currentProjectId = runtime.currentProjectId;
+    anyWin.editor.getCurrentProjectId = () =>
+      runtimeRef.current?.currentProjectId ?? null;
     anyWin.editor.currentProjectName = runtime.currentProjectName;
     anyWin.editor.setCurrentProjectId = (id: string | null) => {
       runtime.setCurrentProject(id, runtime.currentProjectName);

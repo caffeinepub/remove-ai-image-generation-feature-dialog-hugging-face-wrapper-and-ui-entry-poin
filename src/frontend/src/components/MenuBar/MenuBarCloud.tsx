@@ -200,7 +200,9 @@ export default function MenuBarCloud() {
       return;
     }
 
-    const currentProjectId = (window as any).editor?.currentProjectId;
+    const currentProjectId =
+      (window as any).editor?.getCurrentProjectId?.() ??
+      (window as any).editor?.currentProjectId;
 
     if (!currentProjectId) {
       // No current project, trigger Save As
