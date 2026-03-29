@@ -4,6 +4,7 @@ import CanvasSurface from "../components/canvas/CanvasSurface";
 import PixelGridOverlay from "../components/canvas/PixelGridOverlay";
 import PixelHighlightOverlay from "../components/canvas/PixelHighlightOverlay";
 import SelectionOverlay from "../components/canvas/SelectionOverlay";
+import TabBar from "../components/canvas/TabBar";
 import TileGridOverlay from "../components/canvas/TileGridOverlay";
 import ColorQuickDock from "../components/hud/ColorQuickDock";
 import { HUDGeneralInfo } from "../components/hud/HUDGeneralInfo";
@@ -24,7 +25,7 @@ import ImportDialog, {
   type ImportOptions,
 } from "../components/modals/ImportDialog";
 import ImportSpritesheetDialog from "../components/modals/ImportSpritesheetDialog";
-import { getEditorRuntime } from "../editor/EditorRuntime";
+import { EditorRuntime, getEditorRuntime } from "../editor/EditorRuntime";
 import {
   exportCurrentFramePNG,
   exportPNGSequence,
@@ -32,6 +33,7 @@ import {
   exportWebM,
 } from "../engine/ExportManager";
 import { importSpritesheet } from "../engine/SpritesheetImporter";
+import { type TabState, createTab } from "../engine/TabManager";
 import { useActor } from "../hooks/useActor";
 import {
   type SerializedProject,
@@ -44,8 +46,22 @@ const _DEBUG =
     localStorage.getItem("DEBUG_EDITOR") === "1");
 
 export default function HomePage() {
-  // Get persistent EditorRuntime singleton
-  const runtime = getEditorRuntime();
+  // ── Multi-tab state ────────────────────────────────────────────────────────
+  // Each tab owns its own EditorRuntime (independent canvas, layers, frames,
+  // undo history, camera). Tool type/color are synced when switching tabs.
+  const [tabs, setTabs] = useState<TabState[]>(() => {
+    const initialRuntime = getEditorRuntime();
+    return [createTab("tab-0", "Canvas 1", initialRuntime)];
+  });
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+
+  // Derive the active runtime — all existing code references `runtime` unchanged
+  const runtime = tabs[activeTabIndex].runtime;
+  // Keep a ref so stale-closure handlers (keydown, window.editor) always use the current runtime
+  const runtimeRef = useRef(runtime);
+  runtimeRef.current = runtime;
+  const isInitialMount = useRef(true);
+
   const { actor } = useActor();
 
   const canvasRef = useRef<{
@@ -63,6 +79,7 @@ export default function HomePage() {
     width: runtime.canvasWidth,
     height: runtime.canvasHeight,
   });
+  const [tabName, setTabName] = useState("Canvas 1");
   const [camera, setCamera] = useState({
     zoom: 1,
     offsetX: 0,
@@ -186,6 +203,173 @@ export default function HomePage() {
 
   const forceLayersUpdate = () => setLayersVersion((v) => v + 1);
   const forceFramesUpdate = () => setFramesVersion((v) => v + 1);
+
+  // ── Tab management handlers ────────────────────────────────────────────────
+
+  /**
+   * Switch to a different tab.
+   * Saves the current camera/canvasSize/activeLayerId into the current tab slot,
+   * then loads the new tab's saved state into the active-state variables.
+   * Tool settings (tool type, color, brush size) are synced to the new runtime.
+   */
+  const handleTabSwitch = (newIndex: number) => {
+    if (newIndex === activeTabIndex) return;
+
+    // Snapshot current state into the current tab entry
+    setTabs((prev) =>
+      prev.map((t, i) =>
+        i === activeTabIndex
+          ? { ...t, name: tabName, camera, canvasSize, activeLayerId }
+          : t,
+      ),
+    );
+
+    const newTab = tabs[newIndex];
+
+    // Sync tool settings from current runtime to new runtime
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const srcTool = runtime.toolController as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dstTool = newTab.runtime.toolController as any;
+    try {
+      (dstTool as any).setTool?.((srcTool as any).currentTool);
+      const c = (srcTool as any).getCurrentColor?.();
+      if (c) dstTool.setColor(c.r, c.g, c.b, c.a);
+      if ((srcTool as any).brushSize !== undefined)
+        (dstTool as any).brushSize = (srcTool as any).brushSize;
+    } catch {
+      // Sync failures are non-fatal
+    }
+
+    // Activate new tab
+    setActiveTabIndex(newIndex);
+    setCamera(newTab.camera);
+    setCanvasSize(newTab.canvasSize);
+    setTabName(newTab.name);
+    setActiveLayerId(
+      newTab.activeLayerId ??
+        newTab.runtime.frameManager
+          .getCurrentFrame()
+          ?.layerManager.getActiveLayerId() ??
+        null,
+    );
+    setActiveFrameIndexState(newTab.runtime.activeFrameIndex);
+    forceLayersUpdate();
+    forceFramesUpdate();
+    needsRedrawRef.current = true;
+  };
+
+  /**
+   * Add a new canvas tab (max 2 tabs).
+   * Creates a fresh EditorRuntime (32×32 default), saves current tab state,
+   * and switches to the new tab. The camera auto-fits after mount.
+   */
+  const handleTabAdd = () => {
+    if (tabs.length >= 2) return;
+
+    const newRuntime = new EditorRuntime(32, 32);
+    const newId = `tab-${Date.now()}`;
+    const newName = `Canvas ${tabs.length + 1}`;
+    const newTab: TabState = {
+      id: newId,
+      name: newName,
+      runtime: newRuntime,
+      camera: { zoom: 1, offsetX: 0, offsetY: 0 },
+      canvasSize: { width: 32, height: 32 },
+      activeLayerId:
+        newRuntime.frameManager
+          .getCurrentFrame()
+          ?.layerManager.getActiveLayerId() ?? null,
+      isDirty: false,
+      projectId: null,
+      projectName: null,
+    };
+
+    // Save current tab state before switching
+    setTabs((prev) => [
+      ...prev.map((t, i) =>
+        i === activeTabIndex
+          ? { ...t, name: tabName, camera, canvasSize, activeLayerId }
+          : t,
+      ),
+      newTab,
+    ]);
+
+    // Sync tool settings to new runtime
+    try {
+      (newRuntime.toolController as any).setTool?.(
+        (runtime.toolController as any).currentTool,
+      );
+      const c = (runtime.toolController as any).getCurrentColor?.();
+      if (c) newRuntime.toolController.setColor(c.r, c.g, c.b, c.a);
+      if ((runtime.toolController as any).brushSize !== undefined)
+        (newRuntime.toolController as any).brushSize = (
+          runtime.toolController as any
+        ).brushSize;
+    } catch {
+      // Sync failures are non-fatal
+    }
+
+    setActiveTabIndex(tabs.length);
+    setCamera({ zoom: 1, offsetX: 0, offsetY: 0 });
+    setCanvasSize({ width: 32, height: 32 });
+    setTabName(newName);
+    setActiveLayerId(newTab.activeLayerId);
+    setActiveFrameIndexState(0);
+    forceLayersUpdate();
+    forceFramesUpdate();
+    needsRedrawRef.current = true;
+
+    // Auto-fit view for the new tab after the canvas mounts
+    const container = canvasContainerRef.current;
+    if (container) {
+      requestAnimationFrame(() => {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        const zoom = Math.min((w * 0.6) / 32, (h * 0.6) / 32);
+        setCamera({
+          zoom,
+          offsetX: (w - 32 * zoom) / 2,
+          offsetY: (h - 32 * zoom) / 2,
+        });
+      });
+    }
+  };
+
+  /**
+   * Close a tab. Always keeps at least one tab open.
+   * If the closed tab is active, switches to the adjacent tab.
+   */
+  const handleTabClose = (index: number) => {
+    if (tabs.length <= 1) return;
+
+    const newTabs = tabs.filter((_, i) => i !== index);
+    setTabs(newTabs);
+
+    let newActive = activeTabIndex;
+    if (index === activeTabIndex) {
+      // Switch to the previous tab (or stay at 0)
+      newActive = Math.max(0, activeTabIndex - 1);
+      const newTab = newTabs[newActive];
+      setCamera(newTab.camera);
+      setCanvasSize(newTab.canvasSize);
+      setTabName(newTab.name);
+      setActiveLayerId(
+        newTab.activeLayerId ??
+          newTab.runtime.frameManager
+            .getCurrentFrame()
+            ?.layerManager.getActiveLayerId() ??
+          null,
+      );
+      setActiveFrameIndexState(newTab.runtime.activeFrameIndex);
+      forceLayersUpdate();
+      forceFramesUpdate();
+      needsRedrawRef.current = true;
+    } else if (index < activeTabIndex) {
+      newActive = activeTabIndex - 1;
+    }
+    setActiveTabIndex(newActive);
+  };
 
   // Helper function to get active layer hierarchy info
   const getActiveLayerInfo = (): {
@@ -691,6 +875,7 @@ export default function HomePage() {
 
   // Clipboard operations
   const handleCopy = () => {
+    const runtime = runtimeRef.current;
     const layerManager = runtime.getCurrentLayerManager();
     if (!layerManager) return;
 
@@ -772,6 +957,7 @@ export default function HomePage() {
   };
 
   const handleCut = () => {
+    const runtime = runtimeRef.current;
     const layerManager = runtime.getCurrentLayerManager();
     const undoManager = runtime.getCurrentUndoRedoManager();
 
@@ -857,6 +1043,7 @@ export default function HomePage() {
   };
 
   const handlePaste = () => {
+    const runtime = runtimeRef.current;
     if (!clipboardRef.current) return;
 
     const { pixels, width, height } = clipboardRef.current;
@@ -918,6 +1105,7 @@ export default function HomePage() {
    * - Produces exactly one undo entry
    */
   const handleDuplicateSelection = () => {
+    const runtime = runtimeRef.current;
     const layerManager = runtime.getCurrentLayerManager();
     const undoManager = runtime.getCurrentUndoRedoManager();
 
@@ -1505,15 +1693,40 @@ export default function HomePage() {
       runtime.setCurrentProject(id, runtime.currentProjectName);
     anyWin.editor.setCurrentProjectName = (name: string | null) =>
       runtime.setCurrentProject(runtime.currentProjectId, name);
+    anyWin.editor.markTabClean = () => {
+      setTabs((prev) =>
+        prev.map((t, i) =>
+          i === activeTabIndex ? { ...t, isDirty: false } : t,
+        ),
+      );
+    };
+    anyWin.editor.setActiveTabName = (name: string) => {
+      setTabName(name);
+      setTabs((prev) =>
+        prev.map((t, i) => (i === activeTabIndex ? { ...t, name } : t)),
+      );
+    };
 
     needsRedrawRef.current = true;
-  }, [camera]);
+  }, [camera, activeTabIndex]);
 
   useEffect(() => {
     if ((window as any).editor) {
       (window as any).editor.camera = camera;
     }
   }, [camera]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    setTabs((prev) =>
+      prev.map((t, i) => (i === activeTabIndex ? { ...t, isDirty: true } : t)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layersVersion, framesVersion]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional
   useEffect(() => {
@@ -1534,6 +1747,7 @@ export default function HomePage() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
+      const runtime = runtimeRef.current;
 
       const target = e.target as HTMLElement;
       const isInputField = isTypingInInput(target);
@@ -2165,7 +2379,27 @@ export default function HomePage() {
     };
   }, [camera]);
 
-  const handleCanvasSizeConfirm = (newWidth: number, newHeight: number) => {
+  const handleCanvasSizeConfirm = (
+    newWidth: number,
+    newHeight: number,
+    applyToAll: boolean,
+  ) => {
+    // If applyToAll, resize all tabs (inactive ones just need data resize)
+    if (applyToAll && tabs.length > 1) {
+      tabs.forEach((tab, idx) => {
+        if (idx !== activeTabIndex) {
+          tab.runtime.frameManager.resizeCanvas(newWidth, newHeight);
+          tab.runtime.setCanvasSize(newWidth, newHeight);
+        }
+      });
+      setTabs((prev) =>
+        prev.map((tab) => ({
+          ...tab,
+          canvasSize: { width: newWidth, height: newHeight },
+        })),
+      );
+    }
+
     // Resize using runtime
     runtime.frameManager.resizeCanvas(newWidth, newHeight);
     runtime.setCanvasSize(newWidth, newHeight);
@@ -2472,6 +2706,20 @@ export default function HomePage() {
             />
           )}
 
+          <TabBar
+            tabs={tabs.map((t, i) => ({
+              ...t,
+              name: i === activeTabIndex ? tabName : t.name,
+            }))}
+            activeIndex={activeTabIndex}
+            onTabChange={handleTabSwitch}
+            onRename={(_, name) => setTabName(name)}
+            onAdd={handleTabAdd}
+            onClose={handleTabClose}
+            dirtyFlags={tabs.map((t, i) =>
+              i === activeTabIndex ? tabs[activeTabIndex].isDirty : t.isDirty,
+            )}
+          />
           <div
             ref={canvasContainerRef}
             className="flex h-full w-full overflow-hidden bg-background"
@@ -2610,6 +2858,7 @@ export default function HomePage() {
         currentWidth={canvasSize.width}
         currentHeight={canvasSize.height}
         onConfirm={handleCanvasSizeConfirm}
+        tabCount={tabs.length}
       />
 
       <ImportDialog

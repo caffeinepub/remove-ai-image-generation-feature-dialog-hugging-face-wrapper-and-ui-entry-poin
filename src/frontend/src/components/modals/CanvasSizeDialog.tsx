@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,8 @@ interface CanvasSizeDialogProps {
   onOpenChange: (open: boolean) => void;
   currentWidth: number;
   currentHeight: number;
-  onConfirm: (width: number, height: number) => void;
+  onConfirm: (width: number, height: number, applyToAll: boolean) => void;
+  tabCount?: number;
 }
 
 export default function CanvasSizeDialog({
@@ -26,14 +28,17 @@ export default function CanvasSizeDialog({
   currentWidth,
   currentHeight,
   onConfirm,
+  tabCount = 1,
 }: CanvasSizeDialogProps) {
   const [width, setWidth] = useState(currentWidth.toString());
   const [height, setHeight] = useState(currentHeight.toString());
+  const [applyToAll, setApplyToAll] = useState(false);
 
   useEffect(() => {
     if (open) {
       setWidth(currentWidth.toString());
       setHeight(currentHeight.toString());
+      setApplyToAll(false);
     }
   }, [open, currentWidth, currentHeight]);
 
@@ -50,7 +55,7 @@ export default function CanvasSizeDialog({
       return;
     }
 
-    onConfirm(newWidth, newHeight);
+    onConfirm(newWidth, newHeight, applyToAll);
   };
 
   const handleCancel = () => {
@@ -94,6 +99,22 @@ export default function CanvasSizeDialog({
                 className="col-span-3"
               />
             </div>
+            {tabCount > 1 && (
+              <div className="flex items-center gap-2 pt-1">
+                <Checkbox
+                  id="apply-to-all"
+                  checked={applyToAll}
+                  onCheckedChange={(checked) => setApplyToAll(checked === true)}
+                  data-ocid="canvas_size.checkbox"
+                />
+                <Label
+                  htmlFor="apply-to-all"
+                  className="cursor-pointer text-sm"
+                >
+                  Apply to all open canvases
+                </Label>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancel}>

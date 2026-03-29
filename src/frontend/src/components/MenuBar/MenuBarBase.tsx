@@ -645,6 +645,7 @@ export default function MenuBarBase() {
               onSelect={hasClipboardData ? handlePaste : undefined}
               disabled={!hasClipboardData}
               className="text-xs flex justify-between"
+              title="Clipboard is shared across all open tabs"
               style={{
                 color: hasClipboardData ? "inherit" : "var(--muted-foreground)",
                 cursor: hasClipboardData ? "default" : "default",

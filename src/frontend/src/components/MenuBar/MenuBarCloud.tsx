@@ -104,6 +104,10 @@ export default function MenuBarCloud() {
         }
 
         toast.success("Project loaded successfully");
+        const firstName = getFirstLayerName(project.frames[0]?.layerTree || []);
+        const displayName = firstName || "Untitled";
+        (window as any).editor?.setActiveTabName?.(displayName);
+        (window as any).editor?.markTabClean?.();
       } else {
         toast.error("Editor not initialized");
       }
@@ -148,6 +152,7 @@ export default function MenuBarCloud() {
       });
 
       toast.success("Project saved successfully");
+      (window as any).editor?.markTabClean?.();
     } catch (error: any) {
       console.error("Failed to save project:", error);
       toast.error(error.message || "Failed to save project");
@@ -193,6 +198,8 @@ export default function MenuBarCloud() {
         }
 
         toast.success("Project saved successfully");
+        (window as any).editor?.markTabClean?.();
+        (window as any).editor?.setActiveTabName?.(name);
         setSaveAsDialog(false);
       } else if (result.__kind__ === "err") {
         // Check if the error is the project limit error
