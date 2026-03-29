@@ -1,10 +1,16 @@
 /**
  * EditorRuntime.ts
- * Persistent singleton module that owns FrameManager, ToolController, canvas dimensions, project state, HUD visibility state with subscription system for reactive UI updates, and layer-change subscription system for immediate layer panel updates; includes comprehensive filter brush patch system with five new pixel-art-safe filters and complete filter parameter model, plus brush spacing patch with stable distance-based spacing.
+ * Persistent singleton module that owns ProjectState (FrameManager, canvas dimensions,
+ * project identity, camera, view settings), ToolController, HUD visibility state
+ * with subscription system for reactive UI updates, and layer-change subscription
+ * system for immediate layer panel updates; includes comprehensive filter brush patch
+ * system with five new pixel-art-safe filters and complete filter parameter model,
+ * plus brush spacing patch with stable distance-based spacing.
  */
 
-import { FrameManager } from "../engine/FrameManager";
+import type { FrameManager } from "../engine/FrameManager";
 import type { LayerManager } from "../engine/LayerManager";
+import { ProjectState } from "../engine/ProjectState";
 import { ToolController } from "../engine/ToolController";
 import type { UndoRedoManager } from "../engine/UndoRedoManager";
 
@@ -24,14 +30,10 @@ type HudVisibilityCallback = (state: HudVisibilityState) => void;
 type LayersChangedCallback = () => void;
 
 export class EditorRuntime {
-  private _frameManager: FrameManager;
+  private _projectState: ProjectState;
   private _toolController: ToolController;
-  private _canvasWidth: number;
-  private _canvasHeight: number;
-  private _currentProjectId: string | null = null;
-  private _currentProjectName: string | null = null;
 
-  // HUD visibility state
+  // HUD visibility state (global, not per-tab)
   public hudVisibility: HudVisibilityState = {
     generalInfo: true,
     notes: true,
@@ -46,14 +48,11 @@ export class EditorRuntime {
   private layersChangedSubscribers: LayersChangedCallback[] = [];
 
   constructor(width = 32, height = 32) {
-    this._canvasWidth = width;
-    this._canvasHeight = height;
-
-    // Create FrameManager (creates first frame with one layer)
-    this._frameManager = new FrameManager(width, height);
+    // Create ProjectState which internally creates a FrameManager
+    this._projectState = new ProjectState(width, height);
 
     // Get current frame
-    const currentFrame = this._frameManager.getCurrentFrame();
+    const currentFrame = this._projectState.frameManager.getCurrentFrame();
     if (!currentFrame) {
       throw new Error("Failed to initialize EditorRuntime: no current frame");
     }
@@ -867,9 +866,15 @@ export class EditorRuntime {
     }
   }
 
-  // Getters
+  // ─── Public getters (same API as before) ───────────────────────────────────
+
+  /** Access the full ProjectState — used by Phase 2 tab management. */
+  get projectState(): ProjectState {
+    return this._projectState;
+  }
+
   get frameManager(): FrameManager {
-    return this._frameManager;
+    return this._projectState.frameManager;
   }
 
   get toolController(): ToolController {
@@ -877,70 +882,56 @@ export class EditorRuntime {
   }
 
   get activeFrameIndex(): number {
-    return this._frameManager.getCurrentFrameIndex();
+    return this._projectState.frameManager.getCurrentFrameIndex();
   }
 
   get canvasWidth(): number {
-    return this._canvasWidth;
+    return this._projectState.canvasWidth;
   }
 
   get canvasHeight(): number {
-    return this._canvasHeight;
+    return this._projectState.canvasHeight;
   }
 
   get currentProjectId(): string | null {
-    return this._currentProjectId;
+    return this._projectState.projectId;
   }
 
   get currentProjectName(): string | null {
-    return this._currentProjectName;
+    return this._projectState.projectName;
   }
 
-  // Setters
+  // ─── Public setters (same API as before) ──────────────────────────────────
+
   setCanvasSize(width: number, height: number): void {
-    this._canvasWidth = width;
-    this._canvasHeight = height;
+    this._projectState.canvasWidth = width;
+    this._projectState.canvasHeight = height;
   }
 
   setCurrentProject(id: string | null, name: string | null): void {
-    this._currentProjectId = id;
-    this._currentProjectName = name;
+    this._projectState.projectId = id;
+    this._projectState.projectName = name;
   }
 
-  /**
-   * Get current HUD visibility state
-   */
+  // ─── HUD visibility ────────────────────────────────────────────────────────
+
   getHudVisibility(): HudVisibilityState {
     return { ...this.hudVisibility };
   }
 
-  /**
-   * Toggle HUD visibility for a specific component
-   */
   toggleHudVisibility(key: keyof HudVisibilityState): void {
     this.hudVisibility[key] = !this.hudVisibility[key];
     this.notifyHudVisibilitySubscribers();
   }
 
-  /**
-   * Subscribe to HUD visibility changes
-   * Returns an unsubscribe function
-   */
   onHudVisibilityChange(callback: HudVisibilityCallback): () => void {
     this.hudVisibilitySubscribers.push(callback);
-
-    // Return unsubscribe function
     return () => {
       const index = this.hudVisibilitySubscribers.indexOf(callback);
-      if (index > -1) {
-        this.hudVisibilitySubscribers.splice(index, 1);
-      }
+      if (index > -1) this.hudVisibilitySubscribers.splice(index, 1);
     };
   }
 
-  /**
-   * Notify all subscribers of HUD visibility changes
-   */
   private notifyHudVisibilitySubscribers(): void {
     const state = this.getHudVisibility();
     for (const callback of this.hudVisibilitySubscribers) {
@@ -948,80 +939,61 @@ export class EditorRuntime {
     }
   }
 
-  /**
-   * Subscribe to layer changes
-   * Returns an unsubscribe function
-   */
+  // ─── Layer-change subscriptions ────────────────────────────────────────────
+
   onLayersChanged(callback: LayersChangedCallback): () => void {
     this.layersChangedSubscribers.push(callback);
-
-    // Return unsubscribe function
     return () => {
       const index = this.layersChangedSubscribers.indexOf(callback);
-      if (index > -1) {
-        this.layersChangedSubscribers.splice(index, 1);
-      }
+      if (index > -1) this.layersChangedSubscribers.splice(index, 1);
     };
   }
 
-  /**
-   * Notify all subscribers of layer changes
-   */
   notifyLayersChanged(): void {
     for (const callback of this.layersChangedSubscribers) {
       callback();
     }
   }
 
-  /**
-   * Get current LayerManager from active frame
-   */
+  // ─── Frame / layer helpers ─────────────────────────────────────────────────
+
   getCurrentLayerManager(): LayerManager {
-    return this._frameManager.getCurrent();
+    return this._projectState.frameManager.getCurrent();
   }
 
-  /**
-   * Get current UndoRedoManager from active frame
-   */
   getCurrentUndoRedoManager(): UndoRedoManager {
-    return this._frameManager.getCurrentUndoRedoManager();
+    return this._projectState.frameManager.getCurrentUndoRedoManager();
   }
 
   /**
-   * Switch to a different frame by index
-   * Updates ToolController's LayerManager and UndoRedoManager references
-   * Cancels any active selection when switching frames
+   * Switch to a different frame by index.
+   * Updates ToolController's LayerManager and UndoRedoManager references.
+   * Cancels any active selection when switching frames.
    */
   switchToFrame(index: number): boolean {
-    const success = this._frameManager.setActiveFrame(index);
+    const success = this._projectState.frameManager.setActiveFrame(index);
     if (!success) return false;
 
-    const currentFrame = this._frameManager.getCurrentFrame();
+    const currentFrame = this._projectState.frameManager.getCurrentFrame();
     if (!currentFrame) return false;
 
-    // Update ToolController references
     this._toolController.setLayerManager(currentFrame.layerManager);
     this._toolController.attachUndoManager(currentFrame.undoRedoManager);
-
-    // Cancel any active selection when switching frames
     this._toolController.cancelSelectionFromOutside();
 
     return true;
   }
 
   /**
-   * Reset the entire editor state with a new FrameManager and ToolController
-   * Used when loading projects or creating new projects
+   * Reset the entire editor state with a new ProjectState and ToolController.
+   * Used when loading projects or creating new projects.
+   * Auto-fits the view to the new canvas size.
    */
   reset(width: number, height: number): void {
-    this._canvasWidth = width;
-    this._canvasHeight = height;
+    // Replace project state wholesale — this is the key Phase 1 change
+    this._projectState = new ProjectState(width, height);
 
-    // Create fresh FrameManager
-    this._frameManager = new FrameManager(width, height);
-
-    // Get current frame
-    const currentFrame = this._frameManager.getCurrentFrame();
+    const currentFrame = this._projectState.frameManager.getCurrentFrame();
     if (!currentFrame) {
       throw new Error("Failed to reset EditorRuntime: no current frame");
     }
@@ -1037,19 +1009,20 @@ export class EditorRuntime {
     this._toolController.attachUndoManager(currentFrame.undoRedoManager);
     this._toolController.setColor(255, 255, 255, 255);
 
-    // Apply custom brush patch immediately after ToolController instantiation
+    // Re-apply all patches to the new ToolController
     this.applyCustomBrushPatch(this._toolController);
     this.applyBrushSpacingPatch(this._toolController);
     this.applyFilterBrushPatch(this._toolController);
   }
 }
 
-// Module-level singleton instance
+// ─── Module-level singleton ──────────────────────────────────────────────────
+
 let runtimeInstance: EditorRuntime | null = null;
 
 /**
- * Get the singleton EditorRuntime instance
- * Creates it on first call, reuses it on subsequent calls
+ * Get the singleton EditorRuntime instance.
+ * Creates it on first call, reuses it on subsequent calls.
  */
 export function getEditorRuntime(): EditorRuntime {
   if (!runtimeInstance) {
@@ -1059,7 +1032,7 @@ export function getEditorRuntime(): EditorRuntime {
 }
 
 /**
- * Reset the singleton instance (used for testing or complete resets)
+ * Reset the singleton instance (used for testing or complete resets).
  */
 export function resetEditorRuntime(): void {
   runtimeInstance = null;
