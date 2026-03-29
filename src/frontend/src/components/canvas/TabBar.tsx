@@ -131,13 +131,23 @@ export default function TabBar({
                 }}
               >
                 {tab.name}
+                <span
+                  style={{
+                    fontSize: "10px",
+                    marginLeft: "4px",
+                    opacity: 0.45,
+                    flexShrink: 0,
+                  }}
+                >
+                  {index + 1}/{tabs.length}
+                </span>
                 {isDirty && (
                   <span
                     className="tabbar-dirty"
                     title="Unsaved changes"
                     style={{
                       fontSize: "8px",
-                      marginLeft: "4px",
+                      marginLeft: "2px",
                       opacity: 0.7,
                       flexShrink: 0,
                     }}
