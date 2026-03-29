@@ -60,6 +60,8 @@ export default function HomePage() {
   // Keep a ref so stale-closure handlers (keydown, window.editor) always use the current runtime
   const runtimeRef = useRef(runtime);
   runtimeRef.current = runtime;
+  const tabsRef = useRef(tabs);
+  tabsRef.current = tabs;
   const isInitialMount = useRef(true);
 
   const { actor } = useActor();
@@ -134,6 +136,12 @@ export default function HomePage() {
 
   // Focus Mode state
   const [focusModeActive, setFocusModeActive] = useState(false);
+
+  // Pending tab restore for multi-tab project loading
+  const [pendingTabRestore, setPendingTabRestoreState] = useState<{
+    project: SerializedProject;
+    name: string;
+  } | null>(null);
 
   // Hover pixel tracking ref (replaced state with ref)
   const hoverPixelRef = useRef<{ x: number; y: number } | null>(null);
@@ -1689,10 +1697,14 @@ export default function HomePage() {
 
     anyWin.editor.currentProjectId = runtime.currentProjectId;
     anyWin.editor.currentProjectName = runtime.currentProjectName;
-    anyWin.editor.setCurrentProjectId = (id: string | null) =>
+    anyWin.editor.setCurrentProjectId = (id: string | null) => {
       runtime.setCurrentProject(id, runtime.currentProjectName);
-    anyWin.editor.setCurrentProjectName = (name: string | null) =>
+      anyWin.editor.currentProjectId = id;
+    };
+    anyWin.editor.setCurrentProjectName = (name: string | null) => {
       runtime.setCurrentProject(runtime.currentProjectId, name);
+      anyWin.editor.currentProjectName = name;
+    };
     anyWin.editor.markTabClean = () => {
       setTabs((prev) =>
         prev.map((t, i) =>
@@ -1707,6 +1719,22 @@ export default function HomePage() {
       );
     };
 
+    // Multi-tab APIs for project save/load
+    anyWin.editor.getAllTabsData = () =>
+      tabsRef.current.map((t) => ({
+        name: t.name,
+        frameManager: t.runtime.frameManager,
+      }));
+
+    anyWin.editor.addTab = handleTabAdd;
+
+    anyWin.editor.setPendingTabRestore = (
+      project: SerializedProject,
+      name: string,
+    ) => {
+      setPendingTabRestoreState({ project, name });
+    };
+
     needsRedrawRef.current = true;
   }, [camera, activeTabIndex]);
 
@@ -1715,6 +1743,26 @@ export default function HomePage() {
       (window as any).editor.camera = camera;
     }
   }, [camera]);
+
+  // Handle pending tab restore for multi-tab project loading
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional - stable callbacks via refs
+  useEffect(() => {
+    if (!pendingTabRestore) return;
+    if (tabsRef.current.length >= 2 && activeTabIndex !== 1) {
+      handleTabSwitch(1);
+    } else if (tabsRef.current.length >= 2 && activeTabIndex === 1) {
+      resetEditorFromProject(pendingTabRestore.project);
+      setTabName(pendingTabRestore.name);
+      setTabs((prev) =>
+        prev.map((t, i) =>
+          i === 1 ? { ...t, name: pendingTabRestore.name, isDirty: false } : t,
+        ),
+      );
+      setPendingTabRestoreState(null);
+      // Switch back to tab 0 so user lands on first canvas
+      handleTabSwitch(0);
+    }
+  }, [pendingTabRestore, activeTabIndex]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional
   useEffect(() => {

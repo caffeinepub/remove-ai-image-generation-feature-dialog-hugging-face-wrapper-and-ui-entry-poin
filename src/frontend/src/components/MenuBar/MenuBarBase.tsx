@@ -12,7 +12,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getEditorRuntime } from "@/editor/EditorRuntime";
-import { deserializeProject, serializeProject } from "@/lib/projectSerializer";
+import {
+  type SaveProjectChunk,
+  loadProjectFromChunks,
+  prepareProjectForSave,
+} from "@/engine/ExportManager";
+import {
+  decompressProjectData,
+  deserializeProject,
+  serializeProject,
+} from "@/lib/projectSerializer";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -119,40 +128,107 @@ export default function MenuBarBase() {
     if (!file) return;
 
     try {
-      // Read file contents
       const arrayBuffer = await file.arrayBuffer();
-      const data = new Uint8Array(arrayBuffer);
+      let data = new Uint8Array(arrayBuffer);
 
-      // Deserialize project
-      const project = deserializeProject(data);
+      // Try to decompress if needed (legacy single-tab compressed files)
+      let projectData: Uint8Array<ArrayBuffer> =
+        data as Uint8Array<ArrayBuffer>;
+      try {
+        const chunks: SaveProjectChunk[] = [{ index: 0, total: 1, data }];
+        projectData = (await loadProjectFromChunks(
+          chunks,
+        )) as Uint8Array<ArrayBuffer>;
+      } catch {
+        projectData = data;
+      }
 
-      // Load project into editor
-      if ((window as any).editor?.resetEditorFromProject) {
-        (window as any).editor.resetEditorFromProject(project);
-        toast.success("Project imported successfully");
+      // Check for multi-tab envelope
+      let loadedAsMultiTab = false;
+      try {
+        const text = new TextDecoder().decode(projectData);
+        const envelope = JSON.parse(text);
+        if (envelope.__icpixel_multitab__ && Array.isArray(envelope.tabs)) {
+          const tabsData = envelope.tabs as Array<{
+            name: string;
+            data: string;
+          }>;
+          if (tabsData.length >= 1) {
+            const bin0 = atob(tabsData[0].data);
+            const bytes0 = new Uint8Array(bin0.length);
+            for (let i = 0; i < bin0.length; i++)
+              bytes0[i] = bin0.charCodeAt(i);
+            const decompressed0 = await decompressProjectData(bytes0);
+            const project0 = deserializeProject(decompressed0);
+            (window as any).editor?.resetEditorFromProject?.(project0);
+            (window as any).editor?.setActiveTabName?.(tabsData[0].name);
+            (window as any).editor?.markTabClean?.();
+          }
+          if (tabsData.length >= 2) {
+            const bin1 = atob(tabsData[1].data);
+            const bytes1 = new Uint8Array(bin1.length);
+            for (let i = 0; i < bin1.length; i++)
+              bytes1[i] = bin1.charCodeAt(i);
+            const decompressed1 = await decompressProjectData(bytes1);
+            const project1 = deserializeProject(decompressed1);
+            (window as any).editor?.addTab?.();
+            (window as any).editor?.setPendingTabRestore?.(
+              project1,
+              tabsData[1].name,
+            );
+          }
+          toast.success("Project imported successfully");
+          loadedAsMultiTab = true;
+        }
+      } catch {
+        // Not multi-tab envelope
+      }
+
+      if (!loadedAsMultiTab) {
+        const project = deserializeProject(projectData);
+        if ((window as any).editor?.resetEditorFromProject) {
+          (window as any).editor.resetEditorFromProject(project);
+          toast.success("Project imported successfully");
+        }
       }
     } catch (error) {
       console.error("Failed to import project:", error);
       toast.error("Failed to import project");
     }
 
-    // Clear input value
     if (projectInputRef.current) {
       projectInputRef.current.value = "";
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!window.editor?.frameManager) {
       toast.error("Editor not initialized");
       return;
     }
-
     try {
-      const data = serializeProject(window.editor.frameManager);
-      // Create a new Uint8Array with standard ArrayBuffer for Blob compatibility
-      const standardArray = new Uint8Array(data);
-      const blob = new Blob([standardArray], { type: "application/json" });
+      const anyWin = window as any;
+      const allTabs = anyWin.editor?.getAllTabsData?.() ?? [
+        { name: "Canvas 1", frameManager: window.editor!.frameManager },
+      ];
+      const tabsData = await Promise.all(
+        allTabs.map(async (tab: { name: string; frameManager: any }) => {
+          const serialized = serializeProject(tab.frameManager);
+          const chunks = await prepareProjectForSave(serialized);
+          const bytes = chunks[0].data;
+          let binary = "";
+          for (let i = 0; i < bytes.byteLength; i++)
+            binary += String.fromCharCode(bytes[i]);
+          return { name: tab.name, data: btoa(binary) };
+        }),
+      );
+      const envelope = JSON.stringify({
+        __icpixel_multitab__: true,
+        version: 1,
+        tabs: tabsData,
+      });
+      const data = new TextEncoder().encode(envelope);
+      const blob = new Blob([data], { type: "application/octet-stream" });
       const currentProjectName = (window as any).editor?.currentProjectName;
       const filename = `${currentProjectName || "project"}.icpixel`;
       downloadBlob(blob, filename);

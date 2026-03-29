@@ -22,7 +22,11 @@ import {
   prepareProjectForSave,
 } from "@/engine/ExportManager";
 import { useNewProject, useUpdateProject } from "@/hooks/useQueries";
-import { deserializeProject, serializeProject } from "@/lib/projectSerializer";
+import {
+  decompressProjectData,
+  deserializeProject,
+  serializeProject,
+} from "@/lib/projectSerializer";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -86,35 +90,108 @@ export default function MenuBarCloud() {
         projectData = data;
       }
 
-      const project = deserializeProject(projectData);
-
-      // Use resetEditorFromProject to load the project
-      if ((window as any).editor?.resetEditorFromProject) {
-        (window as any).editor.resetEditorFromProject(project);
-
-        // Update project tracking
-        if ((window as any).editor?.setCurrentProjectId) {
-          (window as any).editor.setCurrentProjectId(projectId);
+      // Check if it's a multi-tab envelope
+      let loadedAsMultiTab = false;
+      try {
+        const text = new TextDecoder().decode(projectData);
+        const envelope = JSON.parse(text);
+        if (envelope.__icpixel_multitab__ && Array.isArray(envelope.tabs)) {
+          const tabsData = envelope.tabs as Array<{
+            name: string;
+            data: string;
+          }>;
+          if (tabsData.length >= 1) {
+            const bin0 = atob(tabsData[0].data);
+            const bytes0 = new Uint8Array(bin0.length);
+            for (let i = 0; i < bin0.length; i++)
+              bytes0[i] = bin0.charCodeAt(i);
+            const decompressed0 = await decompressProjectData(bytes0);
+            const project0 = deserializeProject(decompressed0);
+            (window as any).editor?.resetEditorFromProject?.(project0);
+            (window as any).editor?.setCurrentProjectId?.(projectId);
+            (window as any).editor?.setActiveTabName?.(tabsData[0].name);
+            (window as any).editor?.markTabClean?.();
+          }
+          if (tabsData.length >= 2) {
+            const bin1 = atob(tabsData[1].data);
+            const bytes1 = new Uint8Array(bin1.length);
+            for (let i = 0; i < bin1.length; i++)
+              bytes1[i] = bin1.charCodeAt(i);
+            const decompressed1 = await decompressProjectData(bytes1);
+            const project1 = deserializeProject(decompressed1);
+            // Add tab if needed, then set pending restore
+            (window as any).editor?.addTab?.();
+            (window as any).editor?.setPendingTabRestore?.(
+              project1,
+              tabsData[1].name,
+            );
+          }
+          toast.success("Project loaded successfully");
+          loadedAsMultiTab = true;
         }
-        if ((window as any).editor?.setCurrentProjectName) {
+      } catch {
+        // Not a multi-tab envelope, fall through to single-tab load
+      }
+
+      if (!loadedAsMultiTab) {
+        const project = deserializeProject(projectData);
+
+        // Use resetEditorFromProject to load the project
+        if ((window as any).editor?.resetEditorFromProject) {
+          (window as any).editor.resetEditorFromProject(project);
+
+          // Update project tracking
+          if ((window as any).editor?.setCurrentProjectId) {
+            (window as any).editor.setCurrentProjectId(projectId);
+          }
+          if ((window as any).editor?.setCurrentProjectName) {
+            const firstName = getFirstLayerName(
+              project.frames[0]?.layerTree || [],
+            );
+            (window as any).editor.setCurrentProjectName(
+              firstName || "Untitled",
+            );
+          }
+
+          toast.success("Project loaded successfully");
           const firstName = getFirstLayerName(
             project.frames[0]?.layerTree || [],
           );
-          (window as any).editor.setCurrentProjectName(firstName || "Untitled");
+          const displayName = firstName || "Untitled";
+          (window as any).editor?.setActiveTabName?.(displayName);
+          (window as any).editor?.markTabClean?.();
+        } else {
+          toast.error("Editor not initialized");
         }
-
-        toast.success("Project loaded successfully");
-        const firstName = getFirstLayerName(project.frames[0]?.layerTree || []);
-        const displayName = firstName || "Untitled";
-        (window as any).editor?.setActiveTabName?.(displayName);
-        (window as any).editor?.markTabClean?.();
-      } else {
-        toast.error("Editor not initialized");
       }
     } catch (error) {
       console.error("Failed to load project:", error);
       toast.error("Failed to load project");
     }
+  };
+
+  const serializeAllTabs = async (): Promise<Uint8Array> => {
+    const anyWin = window as any;
+    const allTabs = anyWin.editor?.getAllTabsData?.() ?? [
+      { name: "Canvas 1", frameManager: window.editor!.frameManager },
+    ];
+    const tabsData = await Promise.all(
+      allTabs.map(async (tab: { name: string; frameManager: any }) => {
+        const serialized = serializeProject(tab.frameManager);
+        const chunks = await prepareProjectForSave(serialized);
+        const bytes = chunks[0].data;
+        let binary = "";
+        for (let i = 0; i < bytes.byteLength; i++)
+          binary += String.fromCharCode(bytes[i]);
+        return { name: tab.name, data: btoa(binary) };
+      }),
+    );
+    const envelope = JSON.stringify({
+      __icpixel_multitab__: true,
+      version: 1,
+      tabs: tabsData,
+    });
+    return new TextEncoder().encode(envelope);
   };
 
   const handleSave = async () => {
@@ -133,18 +210,7 @@ export default function MenuBarCloud() {
 
     setIsSaving(true);
     try {
-      const serialized = serializeProject(window.editor.frameManager);
-
-      // Prepare project with compression and chunking
-      const chunks = await prepareProjectForSave(serialized);
-
-      if (chunks.length > 1) {
-        toast.info(`Saving large project in ${chunks.length} chunks...`);
-      }
-
-      // For now, we save only the first chunk (single-chunk approach)
-      // Backend doesn't support multi-chunk yet, but compression helps
-      const data = chunks[0].data;
+      const data = await serializeAllTabs();
 
       await updateProject.mutateAsync({
         projectId: currentProjectId,
@@ -173,18 +239,7 @@ export default function MenuBarCloud() {
 
     setIsSaving(true);
     try {
-      const serialized = serializeProject(window.editor.frameManager);
-
-      // Prepare project with compression and chunking
-      const chunks = await prepareProjectForSave(serialized);
-
-      if (chunks.length > 1) {
-        toast.info(`Saving large project in ${chunks.length} chunks...`);
-      }
-
-      // For now, we save only the first chunk (single-chunk approach)
-      // Backend doesn't support multi-chunk yet, but compression helps
-      const data = chunks[0].data;
+      const data = await serializeAllTabs();
 
       const result = await newProject.mutateAsync({ name, data });
 
