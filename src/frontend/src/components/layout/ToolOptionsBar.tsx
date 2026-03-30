@@ -1,5 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { useTheme } from "next-themes";
 import { useState } from "react";
 
 interface ToolOptionsBarProps {
@@ -42,6 +43,17 @@ export default function ToolOptionsBar({
   const [brushSize, setBrushSize] = useState(1);
   const [brushOpacity, setBrushOpacity] = useState(100);
   const [brushSpacing, setBrushSpacing] = useState(0);
+  const { theme } = useTheme();
+  const isWin95 = theme === "win95";
+
+  const toggleClass = (isActive: boolean) =>
+    `px-2 py-1 text-xs font-mono border rounded transition-colors ${
+      isActive
+        ? "bg-primary text-primary-foreground border-primary"
+        : isWin95
+          ? "bg-[#c0c0c0] border-[#888] hover:bg-[#b0b0b0] text-black"
+          : "bg-gray-700 border-gray-600 hover:bg-gray-600"
+    }`;
 
   const handleBrushSizeChange = (value: number[]) => {
     const size = value[0];
@@ -137,11 +149,7 @@ export default function ToolOptionsBar({
         <div className="flex items-center gap-2 ml-auto">
           <button
             type="button"
-            className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
-              mirrorX
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-            }`}
+            className={toggleClass(mirrorX)}
             onClick={onToggleMirrorX}
             title="Mirror X"
           >
@@ -149,11 +157,7 @@ export default function ToolOptionsBar({
           </button>
           <button
             type="button"
-            className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
-              mirrorY
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-            }`}
+            className={toggleClass(mirrorY)}
             onClick={onToggleMirrorY}
             title="Mirror Y"
           >
@@ -161,11 +165,7 @@ export default function ToolOptionsBar({
           </button>
           <button
             type="button"
-            className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
-              pixelPerfect
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-            }`}
+            className={toggleClass(pixelPerfect)}
             onClick={onTogglePixelPerfect}
             title="Pixel Perfect"
           >
@@ -173,11 +173,7 @@ export default function ToolOptionsBar({
           </button>
           <button
             type="button"
-            className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
-              dither
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-            }`}
+            className={toggleClass(dither)}
             onClick={onToggleDither}
             title="Dither"
           >
@@ -185,11 +181,7 @@ export default function ToolOptionsBar({
           </button>
           <button
             type="button"
-            className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
-              showGrid
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-            }`}
+            className={toggleClass(showGrid)}
             onClick={onToggleGrid}
             title="Grid"
           >
@@ -197,11 +189,7 @@ export default function ToolOptionsBar({
           </button>
           <button
             type="button"
-            className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
-              showPixelGrid
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-            }`}
+            className={toggleClass(showPixelGrid)}
             onClick={onTogglePixelGrid}
             title="Pixel Grid"
           >
@@ -209,11 +197,7 @@ export default function ToolOptionsBar({
           </button>
           <button
             type="button"
-            className={`px-2 py-1 text-xs font-mono border rounded transition-colors ${
-              showTileGrid
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-gray-700 border-gray-600 hover:bg-gray-600"
-            }`}
+            className={toggleClass(showTileGrid)}
             onClick={onToggleTileGrid}
             title="Tile Grid"
           >
