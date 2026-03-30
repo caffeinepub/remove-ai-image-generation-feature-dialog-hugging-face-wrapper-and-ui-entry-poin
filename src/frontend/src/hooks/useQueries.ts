@@ -287,6 +287,7 @@ export function useGetEditorVisitCount() {
       return actor.getEditorVisitCount();
     },
     enabled: !!actor && !isFetching,
+    refetchInterval: 30000,
   });
 }
 

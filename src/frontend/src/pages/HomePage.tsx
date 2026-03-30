@@ -175,15 +175,14 @@ export default function HomePage() {
     runtime.getHudVisibility(),
   );
 
-  // Record editor visit once per load
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional
+  // Record editor visit once actor is available
   useEffect(() => {
     if (actor) {
       actor.recordEditorVisit().catch((error) => {
         console.error("Failed to record editor visit:", error);
       });
     }
-  }, []);
+  }, [actor]);
 
   // Subscribe to HUD visibility changes from runtime
   useEffect(() => {
