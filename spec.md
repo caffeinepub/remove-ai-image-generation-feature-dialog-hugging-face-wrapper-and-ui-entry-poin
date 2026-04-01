@@ -1,24 +1,26 @@
-# ICPixel
+# ICPixel — Turntable Panel
 
 ## Current State
-- Multi-tab canvas editor with up to 2 tabs, each with independent ProjectState
-- `HomePage` is mounted/unmounted by the router when navigating to/from `/profile`, destroying all tab state
-- `MenuBarCloud.tsx` checks `result.__kind__ === "ok"` on backend save results, but backend returns standard Candid variants `{ ok: string }` or `{ err: string }` — `__kind__` is always undefined, so save success path never executes
-- Both bugs cause perceived "save doesn't work" and "second canvas disappears"
+The RightSidebar has 3 tabs: Properties, Layers, NFT. It reads from `window.editor` (EditorRuntime) for canvas data. The ExportManager exposes `createFilteredComposite(layerManager, width, height)` for rendering composites per-frame. The FrameManager exposes `setActiveFrame(index)`, `getFrames()`, `getCurrentFrameIndex()`, and `getCurrentLayerManager()`.
 
 ## Requested Changes (Diff)
 
 ### Add
-- Nothing new
+- New `TurntablePanel` component (`src/frontend/src/components/turntable/TurntablePanel.tsx`)
+- A 4th tab "Turn" added to RightSidebar (both dark and grey theme variants)
+- Four preview canvases: Front (no transform), Right (flip X), Back (flip X+Y), Left (flip Y)
+- Each preview shows a label (FRONT, RIGHT, BACK, LEFT) and is clickable
+- Clicking a preview navigates the timeline to the corresponding frame index (0=Front, 1=Right, 2=Back, 3=Left) if that frame exists — otherwise it shows a "No frame" placeholder
+- Previews update automatically by polling `window.editor` every 200ms (same pattern as HUD polling)
+- A small frame count indicator shows how many frames are available vs the 4 expected
+- Active frame highlight: whichever preview corresponds to the current active frame is highlighted
 
 ### Modify
-- `App.tsx`: Stop using router to unmount/remount `HomePage`. Instead render both `HomePage` and `ProfilePage` always, show/hide with CSS (`display: none` / `display: flex`) based on current route. This preserves all editor state including tabs across navigation.
-- `MenuBarCloud.tsx`: Fix `result.__kind__ === "ok"` → `'ok' in result` and `result.__kind__ === "err"` → `'err' in result` in `handleSaveAsConfirm`. Use `result.ok` for the project ID and `result.err` for the error message.
+- `RightSidebar.tsx`: add "Turn" tab trigger and content area, import TurntablePanel
 
 ### Remove
 - Nothing
 
 ## Implementation Plan
-1. Modify `App.tsx` to keep both pages rendered simultaneously, switching visibility based on current path using `useRouterState` or `window.location.pathname`
-2. Fix the Candid result variant checks in `MenuBarCloud.tsx` (`handleSaveAsConfirm` function)
-3. Validate and build
+1. Create `TurntablePanel.tsx` with 4 preview canvases, polling render loop, click-to-navigate logic
+2. Add "Turn" tab to RightSidebar (both compact and full sidebar variants)
