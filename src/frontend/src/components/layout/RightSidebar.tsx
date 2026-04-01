@@ -28,7 +28,6 @@ import type { LayerManager, LayerNode } from "../../engine/LayerManager";
 import ColorPanel from "../properties/ColorPanel";
 import LayerPropertiesPanel from "../properties/LayerPropertiesPanel";
 import ToolProperties from "../properties/ToolProperties";
-import { TurntablePanel } from "../turntable/TurntablePanel";
 
 interface RightSidebarProps {
   layerManager: LayerManager | null;
@@ -637,11 +636,10 @@ export default function RightSidebar({
           defaultValue="properties"
           className="flex-1 flex flex-col overflow-hidden"
         >
-          <TabsList className="grid grid-cols-4 w-full shrink-0">
+          <TabsList className="grid grid-cols-3 w-full shrink-0">
             <TabsTrigger value="properties">Properties</TabsTrigger>
             <TabsTrigger value="layers">Layers</TabsTrigger>
             <TabsTrigger value="nft">NFT</TabsTrigger>
-            <TabsTrigger value="turntable">Turn</TabsTrigger>
           </TabsList>
           <TabsContent value="properties" className="flex-1 overflow-auto p-3">
             <div className="text-sm text-muted-foreground">Loading...</div>
@@ -651,9 +649,6 @@ export default function RightSidebar({
           </TabsContent>
           <TabsContent value="nft" className="flex-1 overflow-auto p-3">
             <div className="text-sm text-muted-foreground">Loading...</div>
-          </TabsContent>
-          <TabsContent value="turntable" className="flex-1 overflow-auto p-3">
-            <TurntablePanel />
           </TabsContent>
         </Tabs>
       </aside>
@@ -1184,11 +1179,10 @@ export default function RightSidebar({
         defaultValue="properties"
         className="flex-1 flex flex-col overflow-hidden"
       >
-        <TabsList className="grid grid-cols-4 w-full shrink-0">
+        <TabsList className="grid grid-cols-3 w-full shrink-0">
           <TabsTrigger value="properties">Properties</TabsTrigger>
           <TabsTrigger value="layers">Layers</TabsTrigger>
           <TabsTrigger value="nft">NFT</TabsTrigger>
-          <TabsTrigger value="turntable">Turn</TabsTrigger>
         </TabsList>
 
         <TabsContent value="properties" className="flex-1 overflow-auto p-3">
@@ -1470,9 +1464,6 @@ export default function RightSidebar({
               </CollapsibleContent>
             </Collapsible>
           </div>
-        </TabsContent>
-        <TabsContent value="turntable" className="flex-1 overflow-auto p-3">
-          <TurntablePanel />
         </TabsContent>
       </Tabs>
     </aside>

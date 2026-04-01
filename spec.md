@@ -1,26 +1,26 @@
-# ICPixel — Turntable Panel
+# ICPixel — Landing Page Overlay
 
 ## Current State
-The RightSidebar has 3 tabs: Properties, Layers, NFT. It reads from `window.editor` (EditorRuntime) for canvas data. The ExportManager exposes `createFilteredComposite(layerManager, width, height)` for rendering composites per-frame. The FrameManager exposes `setActiveFrame(index)`, `getFrames()`, `getCurrentFrameIndex()`, and `getCurrentLayerManager()`.
+The app opens directly into the editor (HomePage.tsx). There is no landing page. The theme toggle button sits at the bottom of the left sidebar (ToolPanel.tsx). Both win95 and dark themes are supported via next-themes.
 
 ## Requested Changes (Diff)
 
 ### Add
-- New `TurntablePanel` component (`src/frontend/src/components/turntable/TurntablePanel.tsx`)
-- A 4th tab "Turn" added to RightSidebar (both dark and grey theme variants)
-- Four preview canvases: Front (no transform), Right (flip X), Back (flip X+Y), Left (flip Y)
-- Each preview shows a label (FRONT, RIGHT, BACK, LEFT) and is clickable
-- Clicking a preview navigates the timeline to the corresponding frame index (0=Front, 1=Right, 2=Back, 3=Left) if that frame exists — otherwise it shows a "No frame" placeholder
-- Previews update automatically by polling `window.editor` every 200ms (same pattern as HUD polling)
-- A small frame count indicator shows how many frames are available vs the 4 expected
-- Active frame highlight: whichever preview corresponds to the current active frame is highlighted
+- `LandingPage.tsx` component: a full-screen overlay that renders on top of the editor on every app load. It shows the logo, SEO-optimized headline/description/feature list, and a "Launch Editor" button that dismisses it. The overlay respects the active theme (win95 = silver-grey classic dialog style; dark = dark UI style). The existing theme toggle button is replicated on the landing page so users can switch themes before entering.
 
 ### Modify
-- `RightSidebar.tsx`: add "Turn" tab trigger and content area, import TurntablePanel
+- `HomePage.tsx`: import and render `<LandingPage>` as an overlay on top of the existing editor layout. State: `showLanding` defaults to `true`, set to `false` when the user clicks Launch Editor.
 
 ### Remove
-- Nothing
+- Nothing removed.
 
 ## Implementation Plan
-1. Create `TurntablePanel.tsx` with 4 preview canvases, polling render loop, click-to-navigate logic
-2. Add "Turn" tab to RightSidebar (both compact and full sidebar variants)
+1. Create `src/frontend/src/components/landing/LandingPage.tsx`
+   - Full-screen fixed overlay (z-[2000]) so it sits above all HUD/dialogs
+   - Renders a centered dialog/window that visually matches the active theme:
+     - win95: `#c0c0c0` background, black text, raised/inset borders, system font
+     - dark: dark card background, white text, standard borders
+   - Content: logo (img /assets/logoicpixel.png), headline, subheadline, body paragraph, feature pill row, Launch Editor button
+   - Theme toggle button (same logic as ToolPanel ThemeToggleButton) positioned top-right of the dialog
+   - SEO: rich semantic HTML (h1, p, ul) so Google indexes the text even though it's a React component
+2. Modify `HomePage.tsx` to mount `<LandingPage>` with `onDismiss` callback

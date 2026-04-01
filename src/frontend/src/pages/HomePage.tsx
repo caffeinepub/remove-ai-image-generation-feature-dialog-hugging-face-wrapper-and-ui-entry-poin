@@ -11,6 +11,7 @@ import { HUDGeneralInfo } from "../components/hud/HUDGeneralInfo";
 import { HUDNotes } from "../components/hud/HUDNotes";
 import { HUDShortcuts } from "../components/hud/HUDShortcuts";
 import type { HUDState } from "../components/hud/hudTypes";
+import LandingPage from "../components/landing/LandingPage";
 import Header from "../components/layout/Header";
 import RightSidebar from "../components/layout/RightSidebar";
 import Timeline from "../components/layout/Timeline";
@@ -49,6 +50,8 @@ export default function HomePage() {
   // ── Multi-tab state ────────────────────────────────────────────────────────
   // Each tab owns its own EditorRuntime (independent canvas, layers, frames,
   // undo history, camera). Tool type/color are synced when switching tabs.
+  const [showLanding, setShowLanding] = useState(true);
+
   const [tabs, setTabs] = useState<TabState[]>(() => {
     const initialRuntime = getEditorRuntime();
     return [createTab("tab-0", "Canvas 1", initialRuntime)];
@@ -2940,6 +2943,8 @@ export default function HomePage() {
         onConfirm={handleSpritesheetConfirm}
         onCancel={handleSpritesheetCancel}
       />
+
+      {showLanding && <LandingPage onLaunch={() => setShowLanding(false)} />}
 
       <ExportDialog
         open={showExportDialog}
