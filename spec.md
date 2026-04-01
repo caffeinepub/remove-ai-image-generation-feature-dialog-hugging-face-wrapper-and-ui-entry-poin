@@ -1,26 +1,32 @@
-# ICPixel — Landing Page Overlay
+# ICPixel — Full SEO Landing Page
 
 ## Current State
-The app opens directly into the editor (HomePage.tsx). There is no landing page. The theme toggle button sits at the bottom of the left sidebar (ToolPanel.tsx). Both win95 and dark themes are supported via next-themes.
+The landing page is a centered popup/modal overlay (`position: fixed`, backdrop blur) rendered inside `HomePage.tsx`. It appears over the editor on first load. This is not a real page — it's a dialog, invisible to search engine crawlers that can't execute JS, and structurally wrong for SEO.
 
 ## Requested Changes (Diff)
 
 ### Add
-- `LandingPage.tsx` component: a full-screen overlay that renders on top of the editor on every app load. It shows the logo, SEO-optimized headline/description/feature list, and a "Launch Editor" button that dismisses it. The overlay respects the active theme (win95 = silver-grey classic dialog style; dark = dark UI style). The existing theme toggle button is replicated on the landing page so users can switch themes before entering.
+- New route `/` renders a full-page `LandingPage` component (no overlay, no backdrop)
+- New route `/editor` renders the `HomePage` (pixel art editor)
+- `LandingPage` component rebuilt as a complete scrollable page with: hero, features, use-cases, how-it-works, monetization note, CTA section, footer
+- Semantic HTML structure (h1, h2, h3, p, ul, li) with SEO-optimized content
+- Meta title and meta description in `index.html`
+- Both dark and Win95 theme variants for the full-page layout
+- Theme toggle button in the landing page header/nav area
 
 ### Modify
-- `HomePage.tsx`: import and render `<LandingPage>` as an overlay on top of the existing editor layout. State: `showLanding` defaults to `true`, set to `false` when the user clicks Launch Editor.
+- `App.tsx`: add `/editor` route, keep `/profile` route; change `/` to render `LandingPage`
+- `index.html`: update `<title>`, add `<meta name="description">`, add Open Graph tags
+- `HomePage.tsx`: remove `showLanding` state and `LandingPage` import; always render the editor
+- `LandingPage.tsx`: full rebuild as a full-page scrollable layout, not a modal
 
 ### Remove
-- Nothing removed.
+- The modal/overlay wrapper (position fixed, backdrop, maxWidth dialog) from `LandingPage.tsx`
+- `showLanding` boolean state from `HomePage.tsx`
 
 ## Implementation Plan
-1. Create `src/frontend/src/components/landing/LandingPage.tsx`
-   - Full-screen fixed overlay (z-[2000]) so it sits above all HUD/dialogs
-   - Renders a centered dialog/window that visually matches the active theme:
-     - win95: `#c0c0c0` background, black text, raised/inset borders, system font
-     - dark: dark card background, white text, standard borders
-   - Content: logo (img /assets/logoicpixel.png), headline, subheadline, body paragraph, feature pill row, Launch Editor button
-   - Theme toggle button (same logic as ToolPanel ThemeToggleButton) positioned top-right of the dialog
-   - SEO: rich semantic HTML (h1, p, ul) so Google indexes the text even though it's a React component
-2. Modify `HomePage.tsx` to mount `<LandingPage>` with `onDismiss` callback
+1. Update `index.html` with SEO meta tags
+2. Add `/editor` route to `App.tsx`; `/` maps to new `LandingPage`, `/editor` maps to `HomePage`
+3. Rebuild `LandingPage.tsx` as a full scrollable page — hero, features, use cases, how it works, monetization note, CTA, footer — both theme variants
+4. Remove `showLanding` from `HomePage.tsx` and import of `LandingPage`
+5. Validate and build

@@ -1,3 +1,4 @@
+import LandingPage from "@/components/landing/LandingPage";
 import HomePage from "@/pages/HomePage";
 import ProfilePage from "@/pages/ProfilePage";
 import {
@@ -13,9 +14,14 @@ const rootRoute = createRootRoute({
   component: RootLayout,
 });
 
-const homeRoute = createRoute({
+const landingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
+});
+
+const editorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/editor",
 });
 
 const profileRoute = createRoute({
@@ -23,19 +29,37 @@ const profileRoute = createRoute({
   path: "/profile",
 });
 
-const routeTree = rootRoute.addChildren([homeRoute, profileRoute]);
+const routeTree = rootRoute.addChildren([
+  landingRoute,
+  editorRoute,
+  profileRoute,
+]);
 const router = createRouter({ routeTree });
 
 function RootLayout() {
   const routerState = useRouterState();
   const pathname = routerState.location.pathname;
   const isProfile = pathname === "/profile";
+  const isEditor = pathname === "/editor";
+  const isLanding = pathname === "/";
 
   return (
     <>
+      {isLanding && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100vh",
+            width: "100%",
+          }}
+        >
+          <LandingPage />
+        </div>
+      )}
       <div
         style={{
-          display: isProfile ? "none" : "flex",
+          display: isEditor ? "flex" : "none",
           flexDirection: "column",
           height: "100%",
           width: "100%",
