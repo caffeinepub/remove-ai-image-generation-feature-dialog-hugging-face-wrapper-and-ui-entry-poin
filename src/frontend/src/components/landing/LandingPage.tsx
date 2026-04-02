@@ -219,8 +219,9 @@ export default function LandingPage() {
               listStyle: "none",
               padding: 0,
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
               gap: "12px",
+              justifyContent: "center",
             }}
           >
             {useCases.map((u) => (
@@ -398,62 +399,6 @@ export default function LandingPage() {
             ICPixel is free to use. Optional support is available through
             donations and pixel asset sales within the platform.
           </p>
-          <nav
-            style={{
-              display: "flex",
-              gap: "16px",
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <button
-              type="button"
-              style={{
-                color: "#000080",
-                textDecoration: "underline",
-                background: "none",
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-                fontFamily: "inherit",
-                fontSize: "inherit",
-              }}
-            >
-              About
-            </button>
-            <button
-              type="button"
-              style={{
-                color: "#000080",
-                textDecoration: "underline",
-                background: "none",
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-                fontFamily: "inherit",
-                fontSize: "inherit",
-              }}
-            >
-              Terms
-            </button>
-            <button
-              type="button"
-              onClick={handleLaunchEditor}
-              style={{
-                color: "#000080",
-                textDecoration: "underline",
-                background: "none",
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-                fontFamily: "inherit",
-                fontSize: "inherit",
-              }}
-              data-ocid="footer.launch_editor.link"
-            >
-              Launch Editor
-            </button>
-          </nav>
         </footer>
       </div>
     );
@@ -624,28 +569,6 @@ export default function LandingPage() {
           ICPixel is free to use. Optional support is available through
           donations and pixel asset sales within the platform.
         </p>
-        <nav className="flex gap-6 justify-center flex-wrap">
-          <button
-            type="button"
-            className="hover:text-foreground transition-colors bg-transparent border-none p-0 cursor-pointer text-sm text-muted-foreground"
-          >
-            About
-          </button>
-          <button
-            type="button"
-            className="hover:text-foreground transition-colors bg-transparent border-none p-0 cursor-pointer text-sm text-muted-foreground"
-          >
-            Terms
-          </button>
-          <button
-            type="button"
-            onClick={handleLaunchEditor}
-            className="hover:text-foreground transition-colors bg-transparent border-none p-0 cursor-pointer text-sm text-muted-foreground"
-            data-ocid="footer.launch_editor.link"
-          >
-            Launch Editor
-          </button>
-        </nav>
       </footer>
     </div>
   );
