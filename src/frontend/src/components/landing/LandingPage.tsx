@@ -57,9 +57,6 @@ export default function LandingPage() {
               alt="ICPixel — Free Online Pixel Art Editor"
               style={{ height: "40px", imageRendering: "pixelated" }}
             />
-            <span style={{ fontWeight: "bold", fontSize: "16px" }}>
-              ICPixel
-            </span>
           </div>
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <Win95Button onClick={handleThemeToggle} small>
@@ -80,7 +77,7 @@ export default function LandingPage() {
           style={{
             padding: "48px 24px",
             textAlign: "center",
-            maxWidth: "800px",
+            maxWidth: "1100px",
             margin: "0 auto",
           }}
         >
@@ -112,10 +109,10 @@ export default function LandingPage() {
               color: "#333",
             }}
           >
-            ICPixel is a professional browser-based pixel art and animation
-            editor with no download required. Draw sprites, build animations,
-            generate NFT collections, and export sprite sheets — all from your
-            browser. Works on any device, completely free.
+            ICPixel is a free online pixel art editor that runs entirely in your
+            browser. Create sprites, pixel animations, and game assets with
+            layers, timeline tools, and modern export options — no download
+            required.
           </p>
           <div
             style={{
@@ -145,7 +142,7 @@ export default function LandingPage() {
         {/* Features */}
         <section
           id="features"
-          style={{ padding: "40px 24px", maxWidth: "900px", margin: "0 auto" }}
+          style={{ padding: "40px 24px", maxWidth: "1200px", margin: "0 auto" }}
         >
           <h2
             style={{
@@ -164,7 +161,7 @@ export default function LandingPage() {
               listStyle: "none",
               padding: 0,
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
               gap: "16px",
             }}
           >
@@ -203,7 +200,7 @@ export default function LandingPage() {
         {/* Use Cases */}
         <section
           id="use-cases"
-          style={{ padding: "40px 24px", maxWidth: "900px", margin: "0 auto" }}
+          style={{ padding: "40px 24px", maxWidth: "1200px", margin: "0 auto" }}
         >
           <h2
             style={{
@@ -261,12 +258,24 @@ export default function LandingPage() {
               </li>
             ))}
           </ul>
+          <p
+            style={{
+              fontSize: "13px",
+              color: "#555",
+              textAlign: "center",
+              marginTop: "16px",
+              fontStyle: "italic",
+            }}
+          >
+            Ideal for creating game sprites, tilesets, and pixel animations for
+            modern web and indie games.
+          </p>
         </section>
 
         {/* How It Works */}
         <section
           id="how-it-works"
-          style={{ padding: "40px 24px", maxWidth: "700px", margin: "0 auto" }}
+          style={{ padding: "40px 24px", maxWidth: "900px", margin: "0 auto" }}
         >
           <h2
             style={{
@@ -386,10 +395,8 @@ export default function LandingPage() {
           }}
         >
           <p style={{ marginBottom: "12px" }}>
-            <small>
-              ICPixel is free to use. Optional support is available through
-              donations and pixel asset sales within the platform.
-            </small>
+            ICPixel is free to use. Optional support is available through
+            donations and pixel asset sales within the platform.
           </p>
           <nav
             style={{
@@ -447,22 +454,6 @@ export default function LandingPage() {
               Launch Editor
             </button>
           </nav>
-          <p style={{ marginTop: "12px", color: "#666" }}>
-            © {new Date().getFullYear()}. Built with{" "}
-            <Heart
-              size={11}
-              style={{ display: "inline", verticalAlign: "middle" }}
-            />{" "}
-            using{" "}
-            <a
-              href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: "#000080" }}
-            >
-              caffeine.ai
-            </a>
-          </p>
         </footer>
       </div>
     );
@@ -480,7 +471,6 @@ export default function LandingPage() {
             className="h-10"
             style={{ imageRendering: "pixelated" }}
           />
-          <span className="font-bold text-lg">ICPixel</span>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -503,7 +493,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section id="hero" className="py-20 px-6 text-center max-w-3xl mx-auto">
+      <section id="hero" className="py-20 px-6 text-center max-w-5xl mx-auto">
         <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
           Free Online Pixel Art Editor{" "}
           <span className="text-muted-foreground">(No Download Required)</span>
@@ -512,10 +502,10 @@ export default function LandingPage() {
           Create, animate, and export pixel art directly in your browser.
         </p>
         <p className="text-base text-muted-foreground mb-8 leading-relaxed">
-          ICPixel is a professional browser-based pixel art and animation editor
-          with no download required. Draw sprites, build animations, generate
-          NFT collections, and export sprite sheets — all from your browser.
-          Works on any device, completely free.
+          ICPixel is a free online pixel art editor that runs entirely in your
+          browser. Create sprites, pixel animations, and game assets with
+          layers, timeline tools, and modern export options — no download
+          required.
         </p>
         <div className="flex gap-4 justify-center flex-wrap">
           <button
@@ -537,11 +527,11 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-16 px-6 max-w-5xl mx-auto">
+      <section id="features" className="py-16 px-6 max-w-6xl mx-auto">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">
           Everything You Need to Create Pixel Art Online
         </h2>
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 list-none p-0">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 list-none p-0">
           {features.map((f) => (
             <li
               key={f.title}
@@ -564,7 +554,7 @@ export default function LandingPage() {
         id="use-cases"
         className="py-16 px-6 bg-card border-y border-border"
       >
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">
             Who Uses ICPixel?
           </h2>
@@ -577,11 +567,15 @@ export default function LandingPage() {
               </li>
             ))}
           </ul>
+          <p className="text-sm text-muted-foreground text-center mt-6 italic">
+            Ideal for creating game sprites, tilesets, and pixel animations for
+            modern web and indie games.
+          </p>
         </div>
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-16 px-6 max-w-3xl mx-auto">
+      <section id="how-it-works" className="py-16 px-6 max-w-4xl mx-auto">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">
           How It Works
         </h2>
@@ -627,12 +621,10 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="py-10 px-6 border-t border-border text-center text-sm text-muted-foreground">
         <p className="mb-4">
-          <small>
-            ICPixel is free to use. Optional support is available through
-            donations and pixel asset sales within the platform.
-          </small>
+          ICPixel is free to use. Optional support is available through
+          donations and pixel asset sales within the platform.
         </p>
-        <nav className="flex gap-6 justify-center flex-wrap mb-4">
+        <nav className="flex gap-6 justify-center flex-wrap">
           <button
             type="button"
             className="hover:text-foreground transition-colors bg-transparent border-none p-0 cursor-pointer text-sm text-muted-foreground"
@@ -654,18 +646,6 @@ export default function LandingPage() {
             Launch Editor
           </button>
         </nav>
-        <p>
-          © {new Date().getFullYear()}. Built with{" "}
-          <Heart size={12} className="inline align-middle" /> using{" "}
-          <a
-            href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-            target="_blank"
-            rel="noreferrer"
-            className="underline hover:text-foreground"
-          >
-            caffeine.ai
-          </a>
-        </p>
       </footer>
     </div>
   );
@@ -739,32 +719,32 @@ const features = [
   {
     icon: <Layers size={18} />,
     title: "Pixel Drawing Tools with Layers",
-    desc: "Professional drawing tools including pencil, eraser, fill bucket, selection, lasso, and magic wand — all with full layer support and non-destructive filters.",
+    desc: "Professional drawing tools including pencil, eraser, fill, and shapes. Work with multiple layers for complex pixel art projects.",
   },
   {
     icon: <Film size={18} />,
-    title: "Frame-by-Frame Animation Timeline",
-    desc: "Animate your pixel art with a full sprite animation tool. Control frame order, duration, and visibility per layer for smooth, expressive animations.",
+    title: "Frame-by-Frame Pixel Animation with Timeline Control",
+    desc: "Create smooth pixel animations using a frame timeline. Adjust timing, preview animations, and manage frames easily.",
   },
   {
     icon: <Grid size={18} />,
     title: "Sprite Sheet Export",
-    desc: "Export your animation frames as a single sprite sheet image, ready to drop into any game engine. Also supports GIF and PNG export formats.",
+    desc: "Export your pixel art as sprite sheets for use in games and animations.",
   },
   {
     icon: <MonitorSmartphone size={18} />,
     title: "Multi-Canvas Workflow",
-    desc: "Open up to 2 independent canvas tabs simultaneously. Each tab has its own layers, frames, undo history, and camera. Copy and paste between canvases.",
+    desc: "Work on multiple canvases and projects simultaneously. Easily switch between different pixel art files.",
   },
   {
     icon: <Download size={18} />,
     title: "Works Entirely in the Browser",
-    desc: "No download, no installation, no account required. Open the free online pixel art editor and start drawing in seconds from any modern browser.",
+    desc: "No downloads or installation required. Create pixel art instantly in your browser.",
   },
   {
     icon: <Sparkles size={18} />,
-    title: "NFT Collection Generator",
-    desc: "Organize your pixel art layers into trait groups and auto-generate NFT collections with weighted rarity. Export a complete mint-ready ZIP package.",
+    title: "WebM Animation Export (Modern Alternative to GIF)",
+    desc: "Export animations as WebM for high-quality playback and smaller file sizes compared to traditional GIFs.",
   },
 ];
 
@@ -772,37 +752,37 @@ const useCases = [
   {
     icon: <Gamepad2 size={24} />,
     title: "Game Developers",
-    desc: "Create sprites, tilesets, and tilemaps for your indie games. Export sprite sheets compatible with Unity, Godot, and Phaser.",
+    desc: "Create sprites, tilesets, and animations for 2D games and indie projects.",
   },
   {
     icon: <Palette size={24} />,
     title: "Pixel Artists",
-    desc: "Professional tools for serious artists — layers, filters, selections, and frame-by-frame animation in a free browser pixel editor.",
+    desc: "Design detailed pixel artwork with precision tools and layered workflows.",
   },
   {
     icon: <Coins size={24} />,
-    title: "NFT Creators",
-    desc: "Built-in NFT collection generator with trait management, rarity weights, and mint-ready ZIP export. No extra tools needed.",
+    title: "NFT Creators / Digital Collectibles",
+    desc: "Create pixel-based digital assets and collections.",
   },
   {
     icon: <Heart size={24} />,
     title: "Hobbyists",
-    desc: "Just want to make pixel art for fun? ICPixel is completely free with no account required. Start making pixel art in your browser now.",
+    desc: "Make pixel art for fun, learning, or personal creative projects.",
   },
 ];
 
 const steps = [
   {
     title: "Open the Editor",
-    desc: 'Click "Launch Editor" to open the free browser pixel editor. No download or sign-up required — the pixel art maker loads instantly in your browser.',
+    desc: 'Click "Launch Editor" to start creating pixel art instantly in your browser — no download or sign-up required.',
   },
   {
     title: "Create Pixel Art or Animation",
-    desc: "Draw with professional pixel drawing tools, organize your work in layers, and build sprite animations with the frame-by-frame timeline. Use the NFT generator to build entire collections.",
+    desc: "Use drawing tools, layers, and animation features to build your artwork or animated sequences.",
   },
   {
     title: "Export or Share",
-    desc: "Export your work as PNG, animated GIF, sprite sheet, or full project file. Save projects to the cloud with Internet Identity for access anywhere.",
+    desc: "Export your work as PNG sprite sheets or WebM animations for high-quality playback.",
   },
 ];
 
