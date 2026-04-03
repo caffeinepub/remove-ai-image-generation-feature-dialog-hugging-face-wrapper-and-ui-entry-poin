@@ -45,7 +45,9 @@ const _DEBUG =
   (typeof localStorage !== "undefined" &&
     localStorage.getItem("DEBUG_EDITOR") === "1");
 
-export default function HomePage() {
+export default function HomePage({
+  isVisible = true,
+}: { isVisible?: boolean }) {
   // ── Multi-tab state ────────────────────────────────────────────────────────
   // Each tab owns its own EditorRuntime (independent canvas, layers, frames,
   // undo history, camera). Tool type/color are synced when switching tabs.
@@ -750,6 +752,35 @@ export default function HomePage() {
     onionNext,
     onionStrength,
   ]);
+
+  // When the editor becomes visible (navigating from landing/profile), re-center
+  // the canvas and trigger a redraw. Without this, the canvas can appear blank
+  // because it initialised while display:none (zero-size container).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional
+  useEffect(() => {
+    if (!isVisible) return;
+    // Use two rAF frames to ensure the DOM has fully reflowed and the container
+    // has non-zero dimensions before we measure and re-center.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const container = canvasContainerRef.current;
+        if (!container) return;
+        const cw = container.clientWidth;
+        const ch = container.clientHeight;
+        if (cw === 0 || ch === 0) return; // still hidden, skip
+        const targetZoom = Math.min(
+          (cw * 0.6) / canvasSize.width,
+          (ch * 0.6) / canvasSize.height,
+        );
+        setCamera({
+          zoom: targetZoom,
+          offsetX: (cw - canvasSize.width * targetZoom) / 2,
+          offsetY: (ch - canvasSize.height * targetZoom) / 2,
+        });
+        needsRedrawRef.current = true;
+      });
+    });
+  }, [isVisible]);
 
   // Handle import PNG - show dialog first
   const handleImportPNG = async (file: File) => {

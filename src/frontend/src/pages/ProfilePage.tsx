@@ -23,7 +23,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate({ to: "/" });
+      navigate({ to: "/editor" });
     }
   }, [isAuthenticated, navigate]);
 
@@ -32,7 +32,7 @@ export default function ProfilePage() {
     try {
       await logout();
       queryClient.clear();
-      navigate({ to: "/" });
+      navigate({ to: "/editor" });
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
@@ -53,7 +53,7 @@ export default function ProfilePage() {
           {/* Header with left-aligned Back and right-aligned Logout */}
           <div className="flex items-center justify-between">
             <Button
-              onClick={() => navigate({ to: "/" })}
+              onClick={() => navigate({ to: "/editor" })}
               variant="outline"
               size="sm"
               className="text-xs h-8"

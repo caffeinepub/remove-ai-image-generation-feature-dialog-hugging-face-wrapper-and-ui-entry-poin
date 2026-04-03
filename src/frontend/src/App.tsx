@@ -65,7 +65,7 @@ function RootLayout() {
           width: "100%",
         }}
       >
-        <HomePage />
+        <HomePage isVisible={isEditor} />
       </div>
       <div
         style={{
