@@ -6,12 +6,17 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  redirect,
   useRouterState,
 } from "@tanstack/react-router";
 import { ThemeProvider } from "next-themes";
 
 const rootRoute = createRootRoute({
   component: RootLayout,
+  notFoundComponent: () => {
+    // Redirect any unknown path to the landing page
+    throw redirect({ to: "/" });
+  },
 });
 
 const landingRoute = createRoute({
@@ -34,14 +39,20 @@ const routeTree = rootRoute.addChildren([
   editorRoute,
   profileRoute,
 ]);
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  defaultNotFoundComponent: () => {
+    throw redirect({ to: "/" });
+  },
+});
 
 function RootLayout() {
   const routerState = useRouterState();
   const pathname = routerState.location.pathname;
   const isProfile = pathname === "/profile";
   const isEditor = pathname === "/editor";
-  const isLanding = pathname === "/";
+  // Treat anything that isn't /editor or /profile as the landing page
+  const isLanding = !isEditor && !isProfile;
 
   return (
     <>
