@@ -1,3 +1,4 @@
+import { markAppLaunched } from "@/App";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Coins,
@@ -25,6 +26,7 @@ export default function LandingPage() {
   };
 
   const handleLaunchEditor = () => {
+    markAppLaunched();
     navigate({ to: "/editor" });
   };
 
@@ -91,12 +93,13 @@ export default function LandingPage() {
           >
             Free Online Pixel Art Editor (No Download Required)
           </h1>
+          {/* FIX 1: was color: "#000080" — now matches editor's black text */}
           <p
             style={{
               fontSize: "16px",
               fontWeight: "bold",
               marginBottom: "16px",
-              color: "#000080",
+              color: "#000000",
             }}
           >
             Create, animate, and export pixel art directly in your browser.
@@ -309,18 +312,20 @@ export default function LandingPage() {
                   gap: "12px",
                 }}
               >
+                {/* FIX 2: was background: "#000080" — now grey matching editor palette */}
                 <span
                   style={{
                     minWidth: "28px",
                     height: "28px",
-                    background: "#000080",
-                    color: "#fff",
+                    background: "#a8a8a8",
+                    color: "#000000",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: "14px",
                     fontWeight: "bold",
-                    border: "2px solid #ffffff",
+                    border: "2px solid",
+                    borderColor: "#ffffff #808080 #808080 #ffffff",
                   }}
                 >
                   {i + 1}
@@ -575,6 +580,8 @@ export default function LandingPage() {
 }
 
 // Win95 button helper component
+// FIX 3: primary buttons now use grey palette (matching editor --primary: 0.52 0 0)
+// instead of #000080 navy blue. Raised border direction corrected.
 function Win95Button({
   children,
   onClick,
@@ -602,9 +609,11 @@ function Win95Button({
     fontSize: primary ? "14px" : small ? "12px" : "13px",
     fontWeight: primary ? "bold" : "normal",
     fontFamily: "system-ui, Arial, sans-serif",
-    background: primary ? "#000080" : "#d4d0c8",
-    color: primary ? "#ffffff" : "#000000",
+    // FIX 3: was "#000080" for primary — now consistent grey matching editor win95 --primary
+    background: primary ? "#a0a0a0" : "#d4d0c8",
+    color: "#000000",
     border: "2px solid",
+    // FIX 4: border order was inverted — correct raised Win95 look: light top-left, dark bottom-right
     borderColor: pressed
       ? "#808080 #ffffff #ffffff #808080"
       : "#ffffff #808080 #808080 #ffffff",
@@ -709,10 +718,12 @@ const steps = [
   },
 ];
 
+// FIX 4: borderColor was "#808080 #ffffff #ffffff #808080" (dark top-left = sunken/inset).
+// Corrected to "#ffffff #808080 #808080 #ffffff" (light top-left = raised, matching editor tab-active style).
 const win95Panel: React.CSSProperties = {
   background: "#d4d0c8",
   border: "2px solid",
-  borderColor: "#808080 #ffffff #ffffff #808080",
-  boxShadow: "inset 1px 1px 0 #808080, inset -1px -1px 0 #ffffff",
+  borderColor: "#ffffff #808080 #808080 #ffffff",
+  boxShadow: "inset 1px 1px 0 #ffffff, inset -1px -1px 0 #808080",
   padding: "12px",
 };

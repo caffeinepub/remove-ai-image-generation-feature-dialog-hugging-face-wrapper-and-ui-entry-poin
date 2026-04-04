@@ -11,6 +11,18 @@ import {
 } from "@tanstack/react-router";
 import { ThemeProvider } from "next-themes";
 
+// Session flag: set when the user clicks "Launch Editor" from the landing page.
+// This ensures /editor and /profile always redirect to / on a fresh page load.
+const SESSION_KEY = "icpixel_launched";
+
+export function markAppLaunched() {
+  sessionStorage.setItem(SESSION_KEY, "1");
+}
+
+function isAppLaunched() {
+  return sessionStorage.getItem(SESSION_KEY) === "1";
+}
+
 const rootRoute = createRootRoute({
   component: RootLayout,
   notFoundComponent: () => {
@@ -27,11 +39,21 @@ const landingRoute = createRoute({
 const editorRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/editor",
+  beforeLoad: () => {
+    if (!isAppLaunched()) {
+      throw redirect({ to: "/" });
+    }
+  },
 });
 
 const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/profile",
+  beforeLoad: () => {
+    if (!isAppLaunched()) {
+      throw redirect({ to: "/" });
+    }
+  },
 });
 
 const routeTree = rootRoute.addChildren([
