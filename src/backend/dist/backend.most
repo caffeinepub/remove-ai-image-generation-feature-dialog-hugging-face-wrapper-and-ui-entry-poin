@@ -1,0 +1,185 @@
+// Version: 1.0.0
+type AccountBalanceArgs__999038961 = {account : AccountIdentifier__484536067};
+type AccountIdentifier__484536067 = Blob;
+type Account__928440765 = {owner : Principal; subaccount : ?Blob};
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type GetAccountTransactionsArgs__232459283 =
+  {account : Account__928440765; max_results : Nat; start : ?Nat};
+type GetAccountTransactionsErr__513897128 = {message : Text};
+type GetAccountTransactionsOk__1060632151 =
+  {oldest_tx_id : ?Nat; transactions : [TransactionWithId__120596774]};
+type GetAccountTransactionsResponse__500230519 =
+  {oldest_tx_id : ?Nat; transactions : [TransactionWithId__120596774]};
+type GetAccountTransactionsResult__571717149 =
+  {
+    #Err : GetAccountTransactionsErr__513897128;
+    #Ok : GetAccountTransactionsOk__1060632151
+  };
+type Int__270357528 = Int__616954475;
+type Int__616954475 = Int;
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type Map__158565046<K, V> = Map__297112838<K, V>;
+type Map__297112838<K, V> =
+  {var root : Node__46230540<K, V>; var size : Nat__490723111};
+type Map__605269027<K, V> = Map__158565046<K, V>;
+type Memo__805009805 = Nat64;
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type Operation__879053468 = {#Transfer : Transfer__523551707};
+type OwnedCanister__19029694 = OwnedCanister__339240405;
+type OwnedCanister__339240405 =
+  {
+    canisterId : Principal;
+    created : Time__900049286;
+    modified : Time__900049286;
+    owner : Principal;
+    userName : Text
+  };
+type PixelPurchase__679177598 =
+  {
+    amountE8s : Nat;
+    buyer : Principal;
+    createdAt : Time__900049286;
+    pixels : Nat;
+    status : PurchaseStatus__775736070;
+    txIndex : Nat
+  };
+type ProjectMetadata__6902801 =
+  {
+    created : Time__900049286;
+    modified : Time__900049286;
+    name : Text;
+    size : Nat;
+    version : Nat
+  };
+type Project__762223144 =
+  {
+    data : Blob;
+    id : Text;
+    metadata : ProjectMetadata__6902801;
+    owner : Principal
+  };
+type PurchaseStatus__775736070 = {#credited; #pending};
+type Subaccount__624930070 = Blob;
+type Time__796480547 = Int__270357528;
+type Time__900049286 = Time__796480547;
+type Tokens__282003724 = {e8s : Nat64};
+type TransactionWithId__120596774 =
+  {id : Nat; transaction : Transaction__865268250};
+type Transaction__865268250 =
+  {created_at_time : Nat; memo : Nat; operation : Operation__879053468};
+type TransferArgs__618752363 =
+  {
+    amount : Tokens__282003724;
+    created_at_time : ?{timestamp_nanos : Nat64};
+    fee : Tokens__282003724;
+    from_subaccount : ?Subaccount__624930070;
+    memo : Memo__805009805;
+    to : AccountIdentifier__484536067
+  };
+type TransferError__600915768 =
+  {
+    #BadFee : {expected_fee : Tokens__282003724};
+    #InsufficientFunds : {balance : Tokens__282003724};
+    #TxCreatedInFuture;
+    #TxDuplicate : {duplicate_of : Nat64};
+    #TxTooOld : {allowed_window_nanos : Nat64}
+  };
+type TransferResult__281130751 =
+  {#Err : TransferError__600915768; #Ok : Nat64};
+type Transfer__523551707 =
+  {
+    amount : Nat64;
+    created_at_time : ?Nat64;
+    fee : Nat64;
+    from : Account__928440765;
+    to : Account__928440765
+  };
+type UserPersonalInfo__922424198 =
+  {additional : ?Text; email : Text; name : Text};
+type UserProfile__491224006 = {name : Text};
+type UserRole__521596351 = {#admin; #guest; #user};
+actor {
+  stable ADMIN_ACCOUNT_ID_HEX : Text;
+  stable ADMIN_PRINCIPAL_TEXT : Text;
+  stable MAX_PIXELS_PER_PURCHASE : Nat;
+  stable PIXEL_PRICE_E8S : Nat64;
+  stable var accessControlEntries : [(Principal, UserRole__521596351)];
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__521596351>
+    };
+  stable var adminAssignedStable : Bool;
+  stable var bannedUsers :
+    {var root : Node__46230540<Principal, Bool>; var size : Nat__490723111};
+  stable var claimedEntries : [Nat];
+  stable var claimedTx :
+    {var root : Node__46230540<Nat, Bool>; var size : Nat__490723111};
+  stable var currentEra : Text;
+  stable var cyclesThresholds : {critical : Nat; low : Nat; ok : Nat};
+  stable var editorVisitCount : Nat;
+  stable indexCanister :
+    actor {
+      get_account_transactions :
+        shared query GetAccountTransactionsArgs__232459283 ->
+          async GetAccountTransactionsResponse__500230519
+    };
+  stable indexCanisterV2 :
+    actor {
+      get_account_transactions :
+        shared query GetAccountTransactionsArgs__232459283 ->
+          async GetAccountTransactionsResult__571717149
+    };
+  stable var lastTxIndexByUser :
+    {var root : Node__46230540<Principal, Nat>; var size : Nat__490723111};
+  stable var lastTxIndexEntries : [(Principal, Nat)];
+  stable ledgerCanister :
+    actor {
+      account_balance :
+        shared query AccountBalanceArgs__999038961 -> async Tokens__282003724;
+      transfer :
+        shared TransferArgs__618752363 -> async TransferResult__281130751
+    };
+  stable managementCanister :
+    actor {
+      canister_status :
+        shared {canister_id : Principal} -> async {cycles : Nat}
+    };
+  stable ownedCanisters :
+    {
+      var root : Node__46230540<Principal, OwnedCanister__19029694>;
+      var size : Nat__490723111
+    };
+  stable var pixelBalances :
+    {var root : Node__46230540<Principal, Nat>; var size : Nat__490723111};
+  stable var pixelEntries : [(Principal, Nat)];
+  stable pixelPriceNanoCycles : Nat;
+  stable var pixelPurchaseEntries : [(Nat, PixelPurchase__679177598)];
+  stable var pixelPurchaseLog :
+    {
+      var root : Node__46230540<Nat, PixelPurchase__679177598>;
+      var size : Nat__490723111
+    };
+  stable transferFee : Nat64;
+  stable var userPersonalInfo :
+    {
+      var root : Node__46230540<Principal, UserPersonalInfo__922424198>;
+      var size : Nat__490723111
+    };
+  stable userProfiles :
+    {
+      var root : Node__46230540<Principal, UserProfile__491224006>;
+      var size : Nat__490723111
+    };
+  stable userProjects :
+    {
+      var root : Node__46230540<Principal, [Project__762223144]>;
+      var size : Nat__490723111
+    }
+};

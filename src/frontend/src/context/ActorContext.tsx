@@ -1,12 +1,12 @@
 import { HttpAgent } from "@dfinity/agent";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { createContext, useContext, type ReactNode } from "react";
-import type { backendInterface } from "../backend";
 import { createActorWithConfig } from "../config";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import type { BackendActor } from "../types/backend";
 
 interface ActorContextValue {
-  actor: backendInterface | null;
+  actor: BackendActor | null;
   isFetching: boolean;
 }
 
@@ -18,7 +18,7 @@ export function ActorProvider({ children }: { children: ReactNode }) {
   const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
 
-  const actorQuery = useQuery<backendInterface>({
+  const actorQuery = useQuery<BackendActor>({
     queryKey: [ACTOR_QUERY_KEY, identity?.getPrincipal().toString()],
     queryFn: async () => {
       const isAuthenticated = !!identity;
@@ -35,18 +35,16 @@ export function ActorProvider({ children }: { children: ReactNode }) {
         identity: isAuthenticated ? identity : undefined,
       });
 
-      // Create the actor using the config helper
-      // Type assertion needed as createActorWithConfig signature is being updated
-      const actor = createActorWithConfig(agent as any);
+      const actor = createActorWithConfig(agent) as unknown as BackendActor;
 
       // Check if initializeAccessControl exists and call it (some backends may not have this method)
+      const actorAny = actor as unknown as Record<string, unknown>;
       if (
         isAuthenticated &&
-        "initializeAccessControl" in actor &&
-        typeof actor.initializeAccessControl === "function"
+        typeof actorAny.initializeAccessControl === "function"
       ) {
         try {
-          await actor.initializeAccessControl();
+          await (actorAny.initializeAccessControl as () => Promise<void>)();
         } catch (error) {
           console.warn("Failed to initialize access control:", error);
         }

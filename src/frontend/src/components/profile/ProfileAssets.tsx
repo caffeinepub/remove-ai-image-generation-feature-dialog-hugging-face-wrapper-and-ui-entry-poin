@@ -1,4 +1,3 @@
-import type { ProjectMetadata } from "@/backend";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useDeleteProject, useListProjects } from "@/hooks/useQueries";
+import type { ProjectMetadata } from "@/types/backend";
 import { FileImage, FolderOpen, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

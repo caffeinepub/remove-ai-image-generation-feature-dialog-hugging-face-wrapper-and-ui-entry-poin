@@ -1,0 +1,199 @@
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type UserProfile = record {name: text;};
+type UserPersonalInfo = 
+ record {
+   additional: opt text;
+   email: text;
+   name: text;
+ };
+type Time = int;
+type PurchaseStatus = 
+ variant {
+   credited;
+   pending;
+ };
+type ProjectResult = 
+ variant {
+   err: text;
+   ok: text;
+ };
+type ProjectMetadata = 
+ record {
+   created: Time;
+   modified: Time;
+   name: text;
+   size: nat;
+   version: nat;
+ };
+type Project = 
+ record {
+   data: blob;
+   id: text;
+   metadata: ProjectMetadata;
+   owner: principal;
+ };
+type PixelPurchase = 
+ record {
+   amountE8s: nat;
+   buyer: principal;
+   createdAt: Time;
+   pixels: nat;
+   status: PurchaseStatus;
+   txIndex: nat;
+ };
+type OwnedCanister = 
+ record {
+   canisterId: principal;
+   created: Time;
+   modified: Time;
+   owner: principal;
+   userName: text;
+ };
+type HealthStatus = 
+ variant {
+   critical;
+   low;
+   ok;
+ };
+type CycleTopUpResult = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type CycleInfo = 
+ record {
+   balance: nat;
+   healthStatus: HealthStatus;
+ };
+type CycleCheckResult = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type AccountIdentifier = blob;
+service : {
+  addOwnedCustomer: (customer: OwnedCanister) -> ();
+  adminBanUser: (user: principal) -> ();
+  adminCreditPixels: (user: principal, amount: nat, reason: text) -> (nat);
+  adminCreditPixelsForPurchase: (txIndex: nat, reason: text) ->
+   (variant {
+      err: text;
+      ok: nat;
+    });
+  adminRemovePixels: (user: principal, amount: nat, reason: text) -> (nat);
+  adminUnbanUser: (user: principal) -> ();
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  deleteProject: (projectId: text) -> (ProjectResult);
+  getAdminUserOverview: () ->
+   (vec
+     record {
+       email: opt text;
+       name: opt text;
+       pixels: nat;
+       "principal": principal;
+     }) query;
+  getAllUserPixelBalances: () -> (vec record {
+                                        principal;
+                                        nat;
+                                      }) query;
+  getAllUsersWithPersonalInfo: () ->
+   (vec
+     record {
+       principal;
+       record {
+         additional: opt text;
+         email: text;
+         name: text;
+       };
+     });
+  getCallerAccountIdentifier: () -> (text);
+  getCallerICPBalance: () -> (variant {
+                                err: text;
+                                ok: nat64;
+                              });
+  getCallerPixelBalance: () -> (nat) query;
+  getCallerPrincipal: () -> (principal);
+  getCallerUserProfile: () -> (opt UserProfile);
+  getCallerUserRole: () -> (UserRole) query;
+  getCanisterCycleInfo: () -> (opt CycleInfo);
+  getCanisterCycles: () -> (CycleCheckResult);
+  getCanisterHealthStatus: () -> (HealthStatus);
+  getCurrentEra: () -> (text) query;
+  getEditorVisitCount: () -> (nat) query;
+  getMyPendingPixelPurchases: () -> (vec PixelPurchase) query;
+  getOwnedCustomerByCanister: (canisterId: principal) -> (opt OwnedCanister);
+  getOwnedCustomersByUser: (user: principal) -> (vec OwnedCanister);
+  getPersonalInfo: () -> (opt UserPersonalInfo);
+  getPixelPrice: () -> (nat64) query;
+  getProject: (projectId: text) -> (opt Project);
+  getRealBackendCycleInfo: () -> (opt CycleInfo);
+  getRealFrontendCycleInfo: () -> (opt CycleInfo);
+  getTotalPixelsSold: () -> (nat) query;
+  getTotalProjectCount: () -> (nat);
+  getUserPersonalInfo: (user: principal) -> (opt UserPersonalInfo) query;
+  getUserPixelBalance: (user: principal) -> (nat) query;
+  getUserProfile: (user: principal) -> (opt UserProfile) query;
+  getUserProjectCount: (user: principal) -> (nat);
+  getUsersByName: (name: text) -> (vec record {
+                                         principal;
+                                         UserPersonalInfo;
+                                       });
+  getUsersWithCompleteInfo: () -> (vec record {
+                                         principal;
+                                         UserPersonalInfo;
+                                       });
+  initializeAccessControl: () -> ();
+  initializeDemoUserProfile: (text) -> ();
+  isCallerAdmin: () -> (bool) query;
+  isUserBanned: (user: principal) -> (bool) query;
+  listAllKnownUsers: () -> (vec principal) query;
+  listAllUsers: () -> (vec principal) query;
+  listAllUsersWithPersonalInfo: () ->
+   (vec record {
+          principal;
+          UserPersonalInfo;
+        }) query;
+  listOwnedCustomers: () -> (vec OwnedCanister);
+  listPendingPixelPurchases: () -> (vec PixelPurchase) query;
+  listProjects: () -> (vec record {
+                             text;
+                             ProjectMetadata;
+                           });
+  newProject: (name: text, data: blob) -> (ProjectResult);
+  recordEditorVisit: () -> ();
+  recordPixelPurchase: (txIndex: nat, pixels: nat, amountE8s: nat) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
+  removeOwnedCustomer: (canisterId: principal) -> ();
+  requestControllerAccess: () -> (text);
+  saveCallerUserProfile: (profile: UserProfile) -> ();
+  savePersonalInfo: (personalInfo: UserPersonalInfo) -> ();
+  searchUsersByEmail: (email: text) ->
+   (vec record {
+          principal;
+          UserPersonalInfo;
+        });
+  setCurrentEra: (era: text) -> ();
+  setCyclesThresholds: (okThreshold: nat, lowThreshold: nat,
+   criticalThreshold: nat) -> ();
+  testAdminImport: (testAmount: nat) -> (text);
+  topUpCanisterCycles: (amount: nat) -> (CycleTopUpResult);
+  topUpFrontendCanisterCycles: (amount: nat) -> (CycleTopUpResult);
+  transferICP: (toAccountId: AccountIdentifier, amountE8s: nat64, memo:
+   opt nat64) -> (variant {
+                    err: text;
+                    ok: nat64;
+                  });
+  updateOwnedCustomer: (canisterId: principal, updatedCustomer:
+   OwnedCanister) -> ();
+  updateProject: (projectId: text, data: blob) -> (ProjectResult);
+  verifyIcpPayment: (txIndex: nat, buyer: principal, amountE8s: nat) ->
+   (bool) query;
+}

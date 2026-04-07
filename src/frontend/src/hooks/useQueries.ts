@@ -1,11 +1,12 @@
 import type { Principal } from "@dfinity/principal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
+  CycleInfo,
   PixelPurchase,
   ProjectMetadata,
   UserPersonalInfo,
   UserProfile,
-} from "../backend";
+} from "../types/backend";
 import { useActor } from "./useActor";
 
 // User Profile Queries
@@ -307,7 +308,7 @@ export function useGetTotalProjectCount() {
 export function useGetRealFrontendCycleInfo() {
   const { actor, isFetching } = useActor();
 
-  return useQuery({
+  return useQuery<CycleInfo | null>({
     queryKey: ["frontendCycleInfo"],
     queryFn: async () => {
       if (!actor) throw new Error("Actor not available");
@@ -320,7 +321,7 @@ export function useGetRealFrontendCycleInfo() {
 export function useGetRealBackendCycleInfo() {
   const { actor, isFetching } = useActor();
 
-  return useQuery({
+  return useQuery<CycleInfo | null>({
     queryKey: ["backendCycleInfo"],
     queryFn: async () => {
       if (!actor) throw new Error("Actor not available");

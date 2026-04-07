@@ -1,4 +1,3 @@
-import type { ProjectMetadata } from "@/backend";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +13,7 @@ import {
   useGetProject,
   useListProjects,
 } from "@/hooks/useQueries";
+import type { ProjectMetadata } from "@/types/backend";
 import { FileImage, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

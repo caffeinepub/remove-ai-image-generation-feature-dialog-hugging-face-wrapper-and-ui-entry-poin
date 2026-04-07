@@ -135,6 +135,7 @@ export default function LandingPage() {
             <Win95Button
               as="a"
               href="#features"
+              secondary
               data-ocid="hero.learn_more.button"
             >
               Learn More ↓
@@ -312,7 +313,7 @@ export default function LandingPage() {
                   gap: "12px",
                 }}
               >
-                {/* FIX 2: was background: "#000080" — now grey matching editor palette */}
+                {/* Step number badge: grey raised Win95 style with slight rounding */}
                 <span
                   style={{
                     minWidth: "28px",
@@ -326,6 +327,7 @@ export default function LandingPage() {
                     fontWeight: "bold",
                     border: "2px solid",
                     borderColor: "#ffffff #808080 #808080 #ffffff",
+                    borderRadius: "4px",
                   }}
                 >
                   {i + 1}
@@ -468,7 +470,8 @@ export default function LandingPage() {
           </button>
           <a
             href="#features"
-            className="px-8 py-3 border border-border rounded-md font-semibold text-lg hover:bg-muted transition-colors"
+            className="px-8 py-3 border-2 rounded-md font-semibold text-lg transition-colors text-black"
+            style={{ background: "#7CB342", borderColor: "#5a8a2e" }}
             data-ocid="hero.learn_more.button"
           >
             Learn More ↓
@@ -580,12 +583,14 @@ export default function LandingPage() {
 }
 
 // Win95 button helper component
-// FIX 3: primary buttons now use grey palette (matching editor --primary: 0.52 0 0)
-// instead of #000080 navy blue. Raised border direction corrected.
+// primary   → grey #d4d0c8 raised Win95 style (matches editor "Get Early Pixels" button in win95 theme)
+// secondary → green #7CB342 bg (matches editor "Log In" button green highlight)
+// default   → grey #d4d0c8 (nav / utility buttons)
 function Win95Button({
   children,
   onClick,
   primary,
+  secondary,
   small,
   as: Tag = "button",
   href,
@@ -594,12 +599,18 @@ function Win95Button({
   children: React.ReactNode;
   onClick?: () => void;
   primary?: boolean;
+  secondary?: boolean;
   small?: boolean;
   as?: "button" | "a";
   href?: string;
   "data-ocid"?: string;
 }) {
+  const [hovered, setHovered] = React.useState(false);
   const [pressed, setPressed] = React.useState(false);
+
+  // secondary → green like "Log In" button; primary/default → grey like "Get Early Pixels" in win95
+  const greenBg = pressed ? "#5a8a2e" : hovered ? "#689F38" : "#7CB342";
+  const greyBg = pressed ? "#a8a8a8" : hovered ? "#c8c4bc" : "#d4d0c8";
 
   const baseStyle: React.CSSProperties = {
     display: "inline-flex",
@@ -607,24 +618,36 @@ function Win95Button({
     gap: "6px",
     padding: small ? "3px 8px" : primary ? "8px 24px" : "5px 16px",
     fontSize: primary ? "14px" : small ? "12px" : "13px",
-    fontWeight: primary ? "bold" : "normal",
+    fontWeight: primary || secondary ? "bold" : "normal",
     fontFamily: "system-ui, Arial, sans-serif",
-    // FIX 3: was "#000080" for primary — now consistent grey matching editor win95 --primary
-    background: primary ? "#a0a0a0" : "#d4d0c8",
+    background: secondary ? greenBg : greyBg,
     color: "#000000",
     border: "2px solid",
-    // FIX 4: border order was inverted — correct raised Win95 look: light top-left, dark bottom-right
+    borderRadius: "4px",
+    // Correct raised Win95 look: light top-left, dark bottom-right
     borderColor: pressed
       ? "#808080 #ffffff #ffffff #808080"
       : "#ffffff #808080 #808080 #ffffff",
     cursor: "pointer",
     userSelect: "none",
     textDecoration: "none",
+    transition: "background 0.1s",
   };
 
   if (Tag === "a") {
     return (
-      <a href={href} style={baseStyle} data-ocid={dataOcid}>
+      <a
+        href={href}
+        style={baseStyle}
+        data-ocid={dataOcid}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => {
+          setHovered(false);
+          setPressed(false);
+        }}
+        onMouseDown={() => setPressed(true)}
+        onMouseUp={() => setPressed(false)}
+      >
         {children}
       </a>
     );
@@ -635,9 +658,13 @@ function Win95Button({
       type="button"
       style={baseStyle}
       onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+        setHovered(false);
+        setPressed(false);
+      }}
       onMouseDown={() => setPressed(true)}
       onMouseUp={() => setPressed(false)}
-      onMouseLeave={() => setPressed(false)}
       data-ocid={dataOcid}
     >
       {children}
@@ -718,12 +745,12 @@ const steps = [
   },
 ];
 
-// FIX 4: borderColor was "#808080 #ffffff #ffffff #808080" (dark top-left = sunken/inset).
-// Corrected to "#ffffff #808080 #808080 #ffffff" (light top-left = raised, matching editor tab-active style).
+// Panel style: raised Win95 border with rounded-lg (8px) corners matching the editor's dialog style.
 const win95Panel: React.CSSProperties = {
   background: "#d4d0c8",
   border: "2px solid",
   borderColor: "#ffffff #808080 #808080 #ffffff",
   boxShadow: "inset 1px 1px 0 #ffffff, inset -1px -1px 0 #808080",
   padding: "12px",
+  borderRadius: "8px",
 };
