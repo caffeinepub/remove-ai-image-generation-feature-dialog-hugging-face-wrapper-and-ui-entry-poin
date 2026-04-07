@@ -66,6 +66,7 @@ export default function LandingPage() {
             </Win95Button>
             <Win95Button
               onClick={handleLaunchEditor}
+              secondary
               data-ocid="nav.launch_editor.button"
             >
               Launch Editor
@@ -436,7 +437,8 @@ export default function LandingPage() {
           <button
             type="button"
             onClick={handleLaunchEditor}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:opacity-90 transition-opacity text-sm"
+            className="px-4 py-2 rounded-md font-medium transition-colors text-sm text-black font-bold"
+            style={{ background: "#7CB342", border: "1px solid #5a8a2e" }}
             data-ocid="nav.launch_editor.button"
           >
             Launch Editor
@@ -463,7 +465,8 @@ export default function LandingPage() {
           <button
             type="button"
             onClick={handleLaunchEditor}
-            className="px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold text-lg hover:opacity-90 transition-opacity"
+            className="px-8 py-3 rounded-md font-semibold text-lg transition-colors text-black"
+            style={{ background: "#7CB342", border: "1px solid #5a8a2e" }}
             data-ocid="hero.launch_editor.primary_button"
           >
             🚀 Launch Editor
@@ -471,7 +474,11 @@ export default function LandingPage() {
           <a
             href="#features"
             className="px-8 py-3 border-2 rounded-md font-semibold text-lg transition-colors text-black"
-            style={{ background: "#7CB342", borderColor: "#5a8a2e" }}
+            style={{
+              background: "#5a8a2e",
+              borderColor: "#3d6b1e",
+              color: "#ffffff",
+            }}
             data-ocid="hero.learn_more.button"
           >
             Learn More ↓
@@ -491,7 +498,7 @@ export default function LandingPage() {
               className="bg-card border border-border rounded-lg p-5"
             >
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-primary">{f.icon}</span>
+                <span style={{ color: "#7CB342" }}>{f.icon}</span>
                 <h3 className="font-semibold text-base">{f.title}</h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -535,7 +542,10 @@ export default function LandingPage() {
         <ol className="flex flex-col gap-6 list-none p-0">
           {steps.map((s, i) => (
             <li key={s.title} className="flex items-start gap-5">
-              <span className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shrink-0">
+              <span
+                className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0 text-black"
+                style={{ background: "#7CB342" }}
+              >
                 {i + 1}
               </span>
               <div>
@@ -564,7 +574,8 @@ export default function LandingPage() {
         <button
           type="button"
           onClick={handleLaunchEditor}
-          className="px-10 py-4 bg-primary text-primary-foreground rounded-md font-bold text-xl hover:opacity-90 transition-opacity"
+          className="px-10 py-4 rounded-md font-bold text-xl transition-colors text-black"
+          style={{ background: "#7CB342", border: "1px solid #5a8a2e" }}
           data-ocid="cta.launch_editor.primary_button"
         >
           🚀 Launch Editor
@@ -583,8 +594,8 @@ export default function LandingPage() {
 }
 
 // Win95 button helper component
-// primary   → grey #d4d0c8 raised Win95 style (matches editor "Get Early Pixels" button in win95 theme)
-// secondary → green #7CB342 bg (matches editor "Log In" button green highlight)
+// primary   → green #7CB342 (matches editor "Log In" / main CTA green across both themes)
+// secondary → green #7CB342 with lighter treatment (matches editor "Log In" button — same colour family)
 // default   → grey #d4d0c8 (nav / utility buttons)
 function Win95Button({
   children,
@@ -608,7 +619,9 @@ function Win95Button({
   const [hovered, setHovered] = React.useState(false);
   const [pressed, setPressed] = React.useState(false);
 
-  // secondary → green like "Log In" button; primary/default → grey like "Get Early Pixels" in win95
+  // primary   → solid green like "Log In" / "Get Early Pixels" green in the editor header
+  // secondary → same green, slightly lighter hover (matches editor "Log In" button — green #7CB342)
+  // default   → grey raised Win95 style
   const greenBg = pressed ? "#5a8a2e" : hovered ? "#689F38" : "#7CB342";
   const greyBg = pressed ? "#a8a8a8" : hovered ? "#c8c4bc" : "#d4d0c8";
 
@@ -616,18 +629,23 @@ function Win95Button({
     display: "inline-flex",
     alignItems: "center",
     gap: "6px",
-    padding: small ? "3px 8px" : primary ? "8px 24px" : "5px 16px",
-    fontSize: primary ? "14px" : small ? "12px" : "13px",
+    padding: small ? "3px 8px" : primary ? "10px 28px" : "5px 16px",
+    fontSize: primary ? "15px" : small ? "12px" : "13px",
     fontWeight: primary || secondary ? "bold" : "normal",
     fontFamily: "system-ui, Arial, sans-serif",
-    background: secondary ? greenBg : greyBg,
+    background: primary || secondary ? greenBg : greyBg,
     color: "#000000",
     border: "2px solid",
     borderRadius: "4px",
-    // Correct raised Win95 look: light top-left, dark bottom-right
-    borderColor: pressed
-      ? "#808080 #ffffff #ffffff #808080"
-      : "#ffffff #808080 #808080 #ffffff",
+    // For green buttons: border matches green tone; for grey: classic Win95 raised
+    borderColor:
+      primary || secondary
+        ? pressed
+          ? "#3d6b1e #8ab55a #8ab55a #3d6b1e"
+          : "#8ab55a #3d6b1e #3d6b1e #8ab55a"
+        : pressed
+          ? "#808080 #ffffff #ffffff #808080"
+          : "#ffffff #808080 #808080 #ffffff",
     cursor: "pointer",
     userSelect: "none",
     textDecoration: "none",
