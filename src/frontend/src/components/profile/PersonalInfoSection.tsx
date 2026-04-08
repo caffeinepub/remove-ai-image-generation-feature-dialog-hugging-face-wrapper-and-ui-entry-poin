@@ -50,7 +50,7 @@ export default function PersonalInfoSection() {
       await savePersonalInfoMutation.mutateAsync({
         name: name.trim(),
         email: email.trim(),
-        additional: additional.trim() || null,
+        additional: additional.trim() || undefined,
       });
       toast.success("Personal information saved successfully");
     } catch (error: any) {

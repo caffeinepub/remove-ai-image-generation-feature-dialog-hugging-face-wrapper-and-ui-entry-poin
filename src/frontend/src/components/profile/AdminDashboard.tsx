@@ -65,11 +65,8 @@ function formatCycles(cycles: bigint): string {
   return cycles.toString();
 }
 
-function getHealthBadge(
-  status: { ok: null } | { low: null } | { critical: null } | string,
-) {
-  const key = typeof status === "string" ? status : Object.keys(status)[0];
-  switch (key) {
+function getHealthBadge(status: string) {
+  switch (status) {
     case "ok":
       return (
         <Badge variant="default" className="bg-green-600">
